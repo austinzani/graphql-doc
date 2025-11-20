@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["operation", "operationType", "examples"],
+  "properties": {
+    "operation": {
+      "type": "string",
+      "description": "Name of the GraphQL operation"
+    },
+    "operationType": {
+      "type": "string",
+      "enum": ["query", "mutation", "subscription"]
+    },
+    "examples": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "query"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "query": {
+            "type": "string"
+          },
+          "variables": {
+            "type": "object"
+          },
+          "response": {
+            "type": "object",
+            "required": ["type", "httpStatus", "body"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["success", "failure", "error"]
+              },
+              "httpStatus": {
+                "type": "number"
+              },
+              "body": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

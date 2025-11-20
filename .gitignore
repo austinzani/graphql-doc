@@ -1,0 +1,21 @@
+node_modules
+dist
+coverage
+.DS_Store
+.env
+*.log
+
+# Editor directories
+.idea
+.vscode
+*.swp
+*.swo
+
+# System
+Thumbs.db
+
+# Build artifacts
+build
+out
+.docusaurus
+

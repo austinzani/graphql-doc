@@ -1,0 +1,74 @@
+{
+  "name": "@graphql-docs/generator",
+  "version": "0.1.0",
+  "description": "GraphQL Operation-First Documentation Generator",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./docusaurus": {
+      "import": "./dist/docusaurus.js",
+      "require": "./dist/docusaurus.cjs"
+    }
+  },
+  "bin": {
+    "graphql-docs": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "templates"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "lint": "eslint . --ext .ts,.tsx",
+    "format": "prettier --write .",
+    "typecheck": "tsc --noEmit",
+    "prepare": "husky install"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@graphql-tools/load": "^8.0.0",
+    "@graphql-tools/schema": "^10.0.0",
+    "ajv": "^8.12.0",
+    "chalk": "^5.3.0",
+    "commander": "^11.1.0",
+    "cosmiconfig": "^9.0.0",
+    "fs-extra": "^11.2.0",
+    "glob": "^10.3.0",
+    "graphql": "^16.8.0",
+    "graphql-config": "^5.0.0",
+    "handlebars": "^4.7.8",
+    "ora": "^8.0.1",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.0",
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "eslint": "^8.55.0",
+    "eslint-config-prettier": "^10.1.8",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.1.0",
+    "tsup": "^8.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.0.0"
+  }
+}

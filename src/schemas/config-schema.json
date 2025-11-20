@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "outputDir": {
+      "type": "string",
+      "default": "./docs/api"
+    },
+    "framework": {
+      "type": "string",
+      "enum": ["docusaurus"],
+      "default": "docusaurus"
+    },
+    "singlePage": {
+      "type": "boolean",
+      "default": false
+    },
+    "metadataDir": {
+      "type": "string",
+      "default": "./docs-metadata"
+    },
+    "examplesDir": {
+      "type": "string"
+    },
+    "errorsDir": {
+      "type": "string"
+    },
+    "includeDeprecated": {
+      "type": "boolean",
+      "default": true
+    },
+    "skipTypes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "generateSidebar": {
+      "type": "boolean",
+      "default": true
+    },
+    "sidebarFile": {
+      "type": "string"
+    },
+    "typeExpansion": {
+      "type": "object",
+      "properties": {
+        "maxDepth": {
+          "type": "number",
+          "default": 5
+        },
+        "defaultLevels": {
+          "type": "number",
+          "default": 2
+        },
+        "showCircularReferences": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "default": {}
+    }
+  }
+}
