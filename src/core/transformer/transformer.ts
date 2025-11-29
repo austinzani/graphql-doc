@@ -4,14 +4,16 @@ import { DocModel, Section, Operation, ExpandedArgument } from './types';
 import { TypeExpander } from './type-expander';
 
 export interface TransformerConfig {
-  defaultDepth?: number;
+  maxDepth?: number;
+  defaultLevels?: number;
+  showCircularReferences?: boolean;
 }
 
 export class Transformer {
   private expander: TypeExpander;
 
   constructor(types: TypeDefinition[], config: TransformerConfig = {}) {
-    this.expander = new TypeExpander(types, config.defaultDepth || 2);
+    this.expander = new TypeExpander(types, config.maxDepth || 5);
   }
 
   transform(

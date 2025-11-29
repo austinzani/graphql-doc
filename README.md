@@ -5,6 +5,7 @@ A documentation generator for GraphQL APIs that organizes content by **operation
 ## Documentation
 
 - [Usage Guide](./docs/usage-guide.md)
+- [CLI Reference](./docs/cli.md)
 - [Configuration Guide](./docs/configuration.md)
 - [Contributing Guide](./CONTRIBUTING.md)
 
@@ -28,14 +29,10 @@ npm install @graphql-docs/generator
 
 ```bash
 # Generate documentation
-npx graphql-docs generate
-
-# Initialize configuration
-npx graphql-docs init
-
-# Validate schema and metadata
-npx graphql-docs validate
+npx graphql-docs generate -s schema.graphql -o docs/api
 ```
+
+For more details, see the [CLI Reference](./docs/cli.md).
 
 ### Configuration
 
@@ -69,6 +66,7 @@ npm run build
 
 # Run tests
 npm test
+npm run test:e2e
 
 # Lint and format
 npm run lint

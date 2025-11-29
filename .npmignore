@@ -1,0 +1,13 @@
+src
+tests
+.github
+.vscode
+.husky
+.eslintrc.cjs
+.prettierrc
+tsconfig.json
+tsup.config.ts
+vitest.config.ts
+.graphqlrc.example
+examples
+docs

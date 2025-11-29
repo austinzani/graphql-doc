@@ -12,17 +12,37 @@ program
 program
   .command('generate')
   .description('Generate documentation from GraphQL schema')
-  .action(async () => {
+  .option('-s, --schema <path>', 'Path to GraphQL schema')
+  .option('-o, --output <path>', 'Output directory')
+  .option('-c, --config <path>', 'Path to config file')
+  .action(async (options) => {
     try {
-      // We'll import this dynamically or move the import to top if we want to be cleaner,
-      // but for now let's use the imported loadGeneratorConfig
       const { loadGeneratorConfig } = await import('../core/config/loader.js');
+      const { Generator } = await import('../core/generator.js');
+
+      // Load config
       const config = await loadGeneratorConfig();
 
-      console.log('Loaded configuration:', JSON.stringify(config, null, 2));
-      console.log('Generating documentation... (Not implemented yet)');
+      // Override config with CLI options
+      if (options.output) {
+        config.outputDir = options.output;
+      }
 
-      // Future: Call generator function here
+      // Determine schema pointer
+      // 1. CLI option
+      // 2. Config (if we add schema to config)
+      // 3. Default 'schema.graphql'
+      let schemaPointer = options.schema;
+
+      if (!schemaPointer) {
+        // TODO: Try to get from graphql-config if not provided
+        // For now default to schema.graphql
+        schemaPointer = 'schema.graphql';
+        console.log(`No schema provided, using default: ${schemaPointer}`);
+      }
+
+      const generator = new Generator(config);
+      await generator.generate(schemaPointer);
     } catch (error) {
       console.error('Error generating documentation:', error);
       process.exit(1);
