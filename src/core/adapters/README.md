@@ -12,6 +12,7 @@ The `DocusaurusAdapter` converts the internal model into a file structure and co
 2.  **Front Matter**: Generates Docusaurus-compatible YAML front matter for MDX files (id, title, sidebar_label, tags).
 3.  **Content Generation**: Uses `MdxRenderer` to generate the body content of the MDX files.
 4.  **Navigation**: Generates `_category_.json` files to control the Docusaurus sidebar structure and ordering.
+5.  **Sidebar Generation**: Automatically generates a `sidebars.js` file (or `sidebars.api.js` if one already exists) to provide a complete navigation structure for the API documentation.
 
 ### Usage
 
@@ -27,4 +28,23 @@ const files = adapter.adapt(docModel);
 //   content: '---\nid: get-user\n...',
 //   type: 'mdx'
 // }
+```
+
+### Sidebar Merging
+
+The adapter intelligently handles existing `sidebars.js` files:
+
+- **No existing sidebar**: Generates `sidebars.js` exporting the API sidebar.
+- **Existing sidebar**: Generates `sidebars.api.js` exporting only the API sidebar items.
+
+Users can then import the generated sidebar into their main configuration:
+
+```javascript
+// sidebars.js
+const apiSidebar = require('./sidebars.api.js');
+
+module.exports = {
+  ...apiSidebar,
+  myOtherSidebar: [ ... ],
+};
 ```

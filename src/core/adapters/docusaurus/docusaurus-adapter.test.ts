@@ -1,6 +1,17 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { DocusaurusAdapter } from './docusaurus-adapter';
-import { DocModel, Operation, Section } from '../transformer/types';
+import { DocModel, Operation, Section } from '../../transformer/types';
+import * as fs from 'fs';
+import * as path from 'path';
+
+vi.mock('fs');
+vi.mock('../../renderer/mdx-renderer', () => {
+  return {
+    MdxRenderer: class {
+      renderOperation = vi.fn().mockReturnValue('Mocked Content');
+    },
+  };
+});
 
 describe('DocusaurusAdapter', () => {
   const mockOperation: Operation = {
@@ -34,7 +45,7 @@ describe('DocusaurusAdapter', () => {
               {
                 ...mockOperation,
                 name: 'deleteUser',
-                directives: { docGroup: { name: 'Users', subsection: 'Admin' } },
+                directives: { docGroup: { name: 'Users', subsection: 'Admin', order: 2 } },
               },
             ],
           },
@@ -43,25 +54,31 @@ describe('DocusaurusAdapter', () => {
     ],
   };
 
-  it('generates correct file structure', () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
+
+  it('generates sidebars.js when no existing sidebar file', () => {
+    vi.mocked(fs.existsSync).mockReturnValue(false);
     const adapter = new DocusaurusAdapter();
     const files = adapter.adapt(mockModel);
 
-    // Expect:
-    // 1. users/_category_.json
-    // 2. users/get-user.mdx
-    // 3. users/admin/_category_.json
-    // 4. users/admin/delete-user.mdx
+    const sidebarFile = files.find((f) => f.path === 'sidebars.js');
+    expect(sidebarFile).toBeDefined();
+    expect(sidebarFile?.content).toContain('apiSidebar');
+  });
 
-    expect(files).toHaveLength(4);
+  it('generates sidebars.api.js when sidebar file exists', () => {
+    vi.mocked(fs.existsSync).mockReturnValue(true);
+    const adapter = new DocusaurusAdapter();
+    const files = adapter.adapt(mockModel);
 
-    const paths = files.map((f) => f.path).sort();
-    expect(paths).toEqual([
-      'users/_category_.json',
-      'users/admin/_category_.json',
-      'users/admin/delete-user.mdx',
-      'users/get-user.mdx',
-    ]);
+    const sidebarFile = files.find((f) => f.path === 'sidebars.api.js');
+    expect(sidebarFile).toBeDefined();
+    expect(sidebarFile?.content).not.toContain('apiSidebar'); // Should be just the array
+
+    const mainSidebar = files.find((f) => f.path === 'sidebars.js');
+    expect(mainSidebar).toBeUndefined();
   });
 
   it('generates correct front matter', () => {

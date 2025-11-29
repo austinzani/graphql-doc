@@ -1,17 +1,23 @@
-import { DocModel, Operation, Section, Subsection } from '../transformer/types';
-import { GeneratedFile } from './types';
-import { MdxRenderer } from '../renderer/mdx-renderer';
+import { DocModel, Operation, Section, Subsection } from '../../transformer/types';
+import { GeneratedFile } from '../types';
+import { MdxRenderer } from '../../renderer/mdx-renderer';
+import { SidebarGenerator } from './sidebar-generator';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export interface DocusaurusAdapterConfig {
   singlePage?: boolean;
+  outputPath?: string;
 }
 
 export class DocusaurusAdapter {
   private renderer: MdxRenderer;
+  private sidebarGenerator: SidebarGenerator;
   private config: DocusaurusAdapterConfig;
 
   constructor(config: DocusaurusAdapterConfig = {}) {
     this.renderer = new MdxRenderer();
+    this.sidebarGenerator = new SidebarGenerator();
     this.config = config;
   }
 
@@ -76,6 +82,24 @@ export class DocusaurusAdapter {
           });
         }
       }
+    }
+
+    // Generate sidebars.js or sidebars.api.js
+    const sidebarItems = this.sidebarGenerator.generate(model);
+    const sidebarsPath = path.join(this.config.outputPath || process.cwd(), 'sidebars.js');
+
+    if (fs.existsSync(sidebarsPath)) {
+      files.push({
+        path: 'sidebars.api.js',
+        content: `module.exports = ${JSON.stringify(sidebarItems, null, 2)};`,
+        type: 'js',
+      });
+    } else {
+      files.push({
+        path: 'sidebars.js',
+        content: `module.exports = ${JSON.stringify({ apiSidebar: sidebarItems }, null, 2)};`,
+        type: 'js',
+      });
     }
 
     return files;
