@@ -2,6 +2,7 @@ import { DocModel, Operation, Section, Subsection } from '../../transformer/type
 import { GeneratedFile } from '../types';
 import { MdxRenderer } from '../../renderer/mdx-renderer';
 import { SidebarGenerator } from './sidebar-generator';
+import { escapeYamlValue, escapeYamlTag } from '../../utils/yaml-escape';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -113,13 +114,13 @@ export class DocusaurusAdapter {
 
   private generateFrontMatter(op: Operation): string {
     const id = this.slugify(op.name);
-    const title = op.name;
-    const sidebarLabel = op.name;
+    const title = escapeYamlValue(op.name);
+    const sidebarLabel = escapeYamlValue(op.name);
 
     const lines = ['---', `id: ${id}`, `title: ${title}`, `sidebar_label: ${sidebarLabel}`];
 
     if (op.directives.docTags?.tags?.length) {
-      const tags = op.directives.docTags.tags.map((t: string) => `"${t}"`).join(', ');
+      const tags = op.directives.docTags.tags.map((t: string) => escapeYamlTag(t)).join(', ');
       lines.push(`tags: [${tags}]`);
     }
 
