@@ -2,7 +2,7 @@ import { GraphQLType } from 'graphql';
 
 export interface DocGroup {
   name: string;
-  order: number;
+  order?: number;
   subsection?: string;
 }
 

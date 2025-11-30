@@ -170,7 +170,7 @@ describe('Transformer', () => {
         arguments: [],
         returnType: 'String',
         directives: {
-          docGroup: { name: 'Zebra', order: undefined }, // No order - should be last alphabetically
+          docGroup: { name: 'Zebra' }, // No order - should be last alphabetically
         },
         referencedTypes: [],
         isDeprecated: false,
