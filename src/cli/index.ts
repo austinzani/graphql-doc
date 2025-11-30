@@ -20,8 +20,8 @@ program
       const { loadGeneratorConfig } = await import('../core/config/loader.js');
       const { Generator } = await import('../core/generator.js');
 
-      // Load config
-      const config = await loadGeneratorConfig();
+      // Load config (pass custom config path if provided)
+      const config = await loadGeneratorConfig(process.cwd(), options.config);
 
       // Override config with CLI options
       if (options.output) {
