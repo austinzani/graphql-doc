@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Operation } from '../transformer/types';
+import { slugify } from '../utils/string-utils';
 
 /**
  * Get the current directory in both ESM and CJS environments.
@@ -77,12 +78,7 @@ export class MdxRenderer {
     });
 
     Handlebars.registerHelper('slugify', (text) => {
-      if (!text) return '';
-      return text
-        .toString()
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/(^-|-$)+/g, '');
+      return slugify(text?.toString() ?? '');
     });
 
     Handlebars.registerHelper('unwrap', (type) => {

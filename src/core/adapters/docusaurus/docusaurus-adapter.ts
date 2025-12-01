@@ -3,6 +3,7 @@ import { GeneratedFile } from '../types';
 import { MdxRenderer } from '../../renderer/mdx-renderer';
 import { SidebarGenerator } from './sidebar-generator';
 import { escapeYamlValue, escapeYamlTag } from '../../utils/yaml-escape';
+import { slugify } from '../../utils/string-utils';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -50,7 +51,7 @@ export class DocusaurusAdapter {
     }
 
     for (const section of model.sections) {
-      const sectionPath = this.slugify(section.name);
+      const sectionPath = slugify(section.name);
 
       // Section category file
       files.push({
@@ -64,7 +65,7 @@ export class DocusaurusAdapter {
         const isRootSubsection = subsection.name === '';
         const subsectionPath = isRootSubsection
           ? sectionPath
-          : `${sectionPath}/${this.slugify(subsection.name)}`;
+          : `${sectionPath}/${slugify(subsection.name)}`;
 
         if (!isRootSubsection) {
           files.push({
@@ -75,7 +76,7 @@ export class DocusaurusAdapter {
         }
 
         for (const op of subsection.operations) {
-          const fileName = `${this.slugify(op.name)}.mdx`;
+          const fileName = `${slugify(op.name)}.mdx`;
           files.push({
             path: `${subsectionPath}/${fileName}`,
             content: this.generateMdx(op),
@@ -113,7 +114,7 @@ export class DocusaurusAdapter {
   }
 
   private generateFrontMatter(op: Operation): string {
-    const id = this.slugify(op.name);
+    const id = slugify(op.name);
     const title = escapeYamlValue(op.name);
     const sidebarLabel = escapeYamlValue(op.name);
 
@@ -145,13 +146,5 @@ export class DocusaurusAdapter {
       null,
       2
     );
-  }
-
-  private slugify(text: string): string {
-    return text
-      .replace(/([a-z])([A-Z])/g, '$1-$2') // Insert hyphen between camelCase
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)+/g, '');
   }
 }
