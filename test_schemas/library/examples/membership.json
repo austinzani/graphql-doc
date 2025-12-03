@@ -1,0 +1,59 @@
+[
+  {
+    "operation": "member",
+    "operationType": "query",
+    "examples": [
+      {
+        "name": "Get Member",
+        "description": "Retrieve member details",
+        "query": "query GetMember($id: ID!) {\n  member(id: $id) {\n    name\n    email\n    status\n  }\n}",
+        "variables": {
+          "id": "mem_123"
+        },
+        "response": {
+          "type": "success",
+          "httpStatus": 200,
+          "body": {
+            "data": {
+              "member": {
+                "name": "Alice Smith",
+                "email": "alice@example.com",
+                "status": "ACTIVE"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "operation": "registerMember",
+    "operationType": "mutation",
+    "examples": [
+      {
+        "name": "Register Member",
+        "description": "Register a new library member",
+        "query": "mutation RegisterMember($input: RegisterMemberInput!) {\n  registerMember(input: $input) {\n    id\n    name\n    status\n  }\n}",
+        "variables": {
+          "input": {
+            "name": "Bob Jones",
+            "email": "bob@example.com"
+          }
+        },
+        "response": {
+          "type": "success",
+          "httpStatus": 200,
+          "body": {
+            "data": {
+              "registerMember": {
+                "id": "mem_456",
+                "name": "Bob Jones",
+                "status": "ACTIVE"
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+]

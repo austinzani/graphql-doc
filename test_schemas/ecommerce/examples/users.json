@@ -1,0 +1,113 @@
+[
+  {
+    "operation": "createUser",
+    "operationType": "mutation",
+    "examples": [
+      {
+        "name": "Create Customer",
+        "description": "Register a new customer account",
+        "query": "mutation CreateCustomer($input: CreateUserInput!) {\n  createUser(input: $input) {\n    id\n    email\n    displayName\n    role\n    profile {\n      firstName\n      lastName\n    }\n  }\n}",
+        "variables": {
+          "input": {
+            "email": "jane.doe@example.com",
+            "password": "securePassword123!",
+            "displayName": "Jane Doe",
+            "profile": {
+              "firstName": "Jane",
+              "lastName": "Doe",
+              "marketingOptIn": true
+            }
+          }
+        },
+        "response": {
+          "type": "success",
+          "httpStatus": 200,
+          "body": {
+            "data": {
+              "createUser": {
+                "id": "550e8400-e29b-41d4-a716-446655440000",
+                "email": "jane.doe@example.com",
+                "displayName": "Jane Doe",
+                "role": "CUSTOMER",
+                "profile": {
+                  "firstName": "Jane",
+                  "lastName": "Doe"
+                }
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "operation": "updateProfile",
+    "operationType": "mutation",
+    "examples": [
+      {
+        "name": "Update Bio",
+        "description": "Update user biography and preferences",
+        "query": "mutation UpdateProfile($input: UserProfileInput!) {\n  updateProfile(input: $input) {\n    id\n    profile {\n      bio\n      preferredLanguage\n    }\n  }\n}",
+        "variables": {
+          "input": {
+            "bio": " avid reader and tech enthusiast",
+            "preferredLanguage": "en"
+          }
+        },
+        "response": {
+          "type": "success",
+          "httpStatus": 200,
+          "body": {
+            "data": {
+              "updateProfile": {
+                "id": "550e8400-e29b-41d4-a716-446655440000",
+                "profile": {
+                  "bio": " avid reader and tech enthusiast",
+                  "preferredLanguage": "en"
+                }
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "operation": "addAddress",
+    "operationType": "mutation",
+    "examples": [
+      {
+        "name": "Add Home Address",
+        "description": "Add a new shipping address",
+        "query": "mutation AddAddress($input: AddressInput!) {\n  addAddress(input: $input) {\n    label\n    address {\n      street1\n      city\n      postalCode\n    }\n  }\n}",
+        "variables": {
+          "input": {
+            "street1": "123 Main St",
+            "city": "New York",
+            "state": "NY",
+            "postalCode": "10001",
+            "countryCode": "US",
+            "label": "Home",
+            "isDefaultShipping": true
+          }
+        },
+        "response": {
+          "type": "success",
+          "httpStatus": 200,
+          "body": {
+            "data": {
+              "addAddress": {
+                "label": "Home",
+                "address": {
+                  "street1": "123 Main St",
+                  "city": "New York",
+                  "postalCode": "10001"
+                }
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+]

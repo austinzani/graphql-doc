@@ -11,6 +11,7 @@ module.exports = {
         node: true,
         es2022: true
     },
+    ignorePatterns: ['examples/**', 'test_schemas/**'],
     rules: {
         '@typescript-eslint/no-explicit-any': 'warn',
         '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }]

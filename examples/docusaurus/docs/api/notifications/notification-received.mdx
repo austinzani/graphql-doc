@@ -1,0 +1,39 @@
+---
+id: notification-received
+title: notificationReceived
+sidebar_label: notificationReceived
+tags: ["notifications", "realtime", "auth-required"]
+hide_title: true
+---
+
+# notificationReceived
+
+
+Subscribe to notifications for the current user
+
+Receives real-time notifications including order updates,
+price alerts, stock alerts, and system messages.
+
+**Type:** `subscription`
+
+
+### Return Type
+
+[`Notification`](#notification)
+A notification sent to a user
+
+#### Fields
+
+| Name | Type | Description |
+| :--- | :--- | :--- |
+| `id` | `UUID` | Unique identifier |
+| `type` | [`NotificationType`](#notification-type) | Notification type |
+| `title` | `String` | Notification title |
+| `body` | `String` | Notification body |
+| `target` | [`NotificationTarget`](#notification-target) | The target entity this notification is about |
+| `isRead` | `Boolean` | Whether the notification has been read |
+| `readAt` | `DateTime` | When the notification was read |
+| `actionUrl` | `String` | Action URL (if applicable) |
+| `createdAt` | `DateTime` | When created |
+| `updatedAt` | `DateTime` | When last updated |
+

@@ -1,0 +1,58 @@
+---
+id: order-status-changed
+title: orderStatusChanged
+sidebar_label: orderStatusChanged
+tags: ["orders", "realtime", "auth-required"]
+hide_title: true
+---
+
+# orderStatusChanged
+
+
+Subscribe to order status updates
+
+Receives real-time updates when the status of an order changes.
+Useful for showing live order tracking to customers.
+
+**Type:** `subscription`
+
+### Arguments
+
+| Name | Type | Description |
+| :--- | :--- | :--- |
+| `orderId` | `UUID` | Order ID to subscribe to |
+
+### Return Type
+
+[`Order`](#order)
+A customer order
+
+Orders track the purchase lifecycle from cart to delivery.
+**Circular Reference:** Order -&gt; User -&gt; Orders
+
+#### Fields
+
+| Name | Type | Description |
+| :--- | :--- | :--- |
+| `id` | `UUID` | Unique identifier |
+| `orderNumber` | `String` | Human-readable order number |
+| `customer` | [`User`](#user) | Customer who placed the order (circular reference) |
+| `status` | [`OrderStatus`](#order-status) | Current order status |
+| `items` | [[`OrderItem`](#order-item)] | Order line items |
+| `subtotal` | `Money` | Subtotal before tax and shipping |
+| `taxAmount` | `Money` | Tax amount |
+| `shippingAmount` | `Money` | Shipping cost |
+| `discountAmount` | `Money` | Discount amount |
+| `total` | `Money` | Total order amount |
+| `currency` | [`Currency`](#currency) | Currency used for this order |
+| `shippingAddress` | [`Address`](#address) | Shipping address |
+| `billingAddress` | [`Address`](#address) | Billing address |
+| `payment` | [`PaymentInfo`](#payment-info) | Payment information |
+| `shipping` | [`ShippingInfo`](#shipping-info) | Shipping information |
+| `appliedCoupons` | [[`Coupon`](#coupon)] | Applied coupon codes |
+| `customerNotes` | `String` | Order notes from customer |
+| `internalNotes` | `String` | Internal notes (admin only) |
+| `timeline` | [[`OrderEvent`](#order-event)] | Order history/timeline |
+| `createdAt` | `DateTime` | When created |
+| `updatedAt` | `DateTime` | When last updated |
+

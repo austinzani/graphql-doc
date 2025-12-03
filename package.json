@@ -21,7 +21,13 @@
     "./docusaurus": {
       "import": "./dist/docusaurus.js",
       "require": "./dist/docusaurus.cjs"
-    }
+    },
+    "./components": {
+      "types": "./dist/components/index.d.ts",
+      "import": "./dist/components/index.js",
+      "require": "./dist/components/index.cjs"
+    },
+    "./components/styles.css": "./dist/components/styles.css"
   },
   "bin": {
     "graphql-docs": "./dist/cli.js"
@@ -72,9 +78,23 @@
     "ora": "^8.2.0",
     "zod": "^3.22.0"
   },
+  "peerDependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@types/fs-extra": "^11.0.0",
     "@types/node": "^20.10.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
     "@typescript-eslint/eslint-plugin": "^6.13.0",
     "@typescript-eslint/parser": "^6.13.0",
     "@vitest/coverage-v8": "^1.6.1",

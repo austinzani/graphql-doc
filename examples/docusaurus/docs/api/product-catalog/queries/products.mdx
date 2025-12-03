@@ -1,0 +1,37 @@
+---
+id: products
+title: products
+sidebar_label: products
+tags: ["products", "read", "public", "paginated"]
+hide_title: true
+---
+
+# products
+
+
+List products with filtering and pagination
+
+**Type:** `query`
+
+### Arguments
+
+| Name | Type | Description |
+| :--- | :--- | :--- |
+| `filter` | [`ProductFilterInput`](#product-filter-input) | Filter options |
+| `sortBy` | [`ProductSortField`](#product-sort-field) | Sort field |
+| `sortDirection` | [`SortDirection`](#sort-direction) | Sort direction |
+| `first` | `Int` | Number of results |
+| `after` | `String` | Pagination cursor |
+
+### Return Type
+
+[`ProductConnection`](#product-connection)
+Paginated list of products
+
+#### Fields
+
+| Name | Type | Description |
+| :--- | :--- | :--- |
+| `edges` | [[`ProductEdge`](#product-edge)] | The products |
+| `pageInfo` | [`PageInfo`](#page-info) | Pagination info |
+

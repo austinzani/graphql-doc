@@ -1,0 +1,1759 @@
+"""
+E-Commerce Platform GraphQL API
+
+This schema represents a comprehensive e-commerce platform with support for
+users, products, orders, reviews, and real-time notifications.
+"""
+schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}
+
+# =============================================================================
+# CUSTOM DIRECTIVES FOR DOCUMENTATION
+# =============================================================================
+
+"""
+Groups operations into logical sections for documentation organization.
+"""
+directive @docGroup(
+  """The name of the documentation section"""
+  name: String!
+  """Display order (lower numbers first)"""
+  order: Int
+  """Optional subsection within the main section"""
+  subsection: String
+) on FIELD_DEFINITION
+
+"""
+Sets the display priority for ordering operations within a section.
+"""
+directive @docPriority(
+  """Priority level (lower numbers appear first)"""
+  level: Int!
+) on FIELD_DEFINITION
+
+"""
+Adds tags for filtering and categorizing operations.
+"""
+directive @docTags(
+  """List of tags for this operation"""
+  tags: [String!]!
+) on FIELD_DEFINITION
+
+# =============================================================================
+# SCALARS
+# =============================================================================
+
+"""
+A date-time string in ISO 8601 format (e.g., "2024-01-15T09:30:00Z")
+"""
+scalar DateTime
+
+"""
+A monetary amount represented as a string with currency precision (e.g., "19.99")
+"""
+scalar Money
+
+"""
+A universally unique identifier in UUID v4 format
+"""
+scalar UUID
+
+# =============================================================================
+# ENUMS
+# =============================================================================
+
+"""
+The current status of a user account
+"""
+enum UserStatus {
+  """User account is active and in good standing"""
+  ACTIVE
+  """User account is temporarily suspended"""
+  SUSPENDED
+  """User account has been permanently banned"""
+  BANNED
+  """User account is pending email verification"""
+  PENDING_VERIFICATION
+}
+
+"""
+User role determining access levels and permissions
+"""
+enum UserRole {
+  """Regular customer with standard permissions"""
+  CUSTOMER
+  """Seller with ability to list products"""
+  SELLER
+  """Administrator with full system access"""
+  ADMIN
+  """Support staff with limited admin capabilities"""
+  SUPPORT
+}
+
+"""
+Product availability status in the catalog
+"""
+enum ProductStatus {
+  """Product is available for purchase"""
+  AVAILABLE
+  """Product is temporarily out of stock"""
+  OUT_OF_STOCK
+  """Product listing is hidden from customers"""
+  HIDDEN
+  """Product has been discontinued"""
+  DISCONTINUED
+}
+
+"""
+The lifecycle status of an order
+"""
+enum OrderStatus {
+  """Order has been placed but not yet processed"""
+  PENDING
+  """Payment has been confirmed"""
+  CONFIRMED
+  """Order is being prepared for shipment"""
+  PROCESSING
+  """Order has been shipped"""
+  SHIPPED
+  """Order has been delivered"""
+  DELIVERED
+  """Order has been cancelled"""
+  CANCELLED
+  """Order has been refunded"""
+  REFUNDED
+}
+
+"""
+Payment methods accepted by the platform
+"""
+enum PaymentMethod {
+  """Credit or debit card payment"""
+  CARD
+  """PayPal payment"""
+  PAYPAL
+  """Bank transfer"""
+  BANK_TRANSFER
+  """Cryptocurrency payment"""
+  CRYPTO @deprecated(reason: "Crypto payments will be removed in v2.0. Use CARD or PAYPAL instead.")
+}
+
+"""
+Supported currencies for transactions
+"""
+enum Currency {
+  """United States Dollar"""
+  USD
+  """Euro"""
+  EUR
+  """British Pound Sterling"""
+  GBP
+  """Japanese Yen"""
+  JPY
+}
+
+"""
+Sort direction for list queries
+"""
+enum SortDirection {
+  """Ascending order (A-Z, 0-9, oldest first)"""
+  ASC
+  """Descending order (Z-A, 9-0, newest first)"""
+  DESC
+}
+
+"""
+Fields available for sorting product listings
+"""
+enum ProductSortField {
+  """Sort by product name"""
+  NAME
+  """Sort by price"""
+  PRICE
+  """Sort by creation date"""
+  CREATED_AT
+  """Sort by popularity/sales"""
+  POPULARITY
+  """Sort by average rating"""
+  RATING
+}
+
+"""
+Types of notifications sent to users
+"""
+enum NotificationType {
+  """Order status update"""
+  ORDER_UPDATE
+  """Price drop on wishlist item"""
+  PRICE_ALERT
+  """Product back in stock"""
+  STOCK_ALERT
+  """Promotional offer"""
+  PROMOTION
+  """System announcement"""
+  SYSTEM
+}
+
+# =============================================================================
+# INTERFACES
+# =============================================================================
+
+"""
+Base interface for all entities with timestamps
+
+All database entities implement this interface to provide
+consistent timestamp tracking.
+"""
+interface Timestamped {
+  """When the entity was created"""
+  createdAt: DateTime!
+  """When the entity was last updated"""
+  updatedAt: DateTime!
+}
+
+"""
+Interface for entities that can be soft-deleted
+
+Entities implementing this interface are never permanently deleted
+but instead marked as deleted with a timestamp.
+"""
+interface SoftDeletable {
+  """When the entity was deleted, null if not deleted"""
+  deletedAt: DateTime
+  """Whether the entity is currently deleted"""
+  isDeleted: Boolean!
+}
+
+"""
+Interface for content that can be moderated
+"""
+interface Moderatable {
+  """Whether the content has been approved by moderators"""
+  isApproved: Boolean!
+  """When the content was moderated"""
+  moderatedAt: DateTime
+  """The moderator who reviewed this content"""
+  moderatedBy: User
+}
+
+# =============================================================================
+# UNION TYPES
+# =============================================================================
+
+"""
+Result of a search query - can return products, users, or categories
+"""
+union SearchResult = Product | User | Category
+
+"""
+The target of a notification - what the notification is about
+"""
+union NotificationTarget = Order | Product | Review | User
+
+"""
+Possible results of a checkout operation
+"""
+union CheckoutResult = Order | CheckoutError | PaymentPending
+
+# =============================================================================
+# TYPES - Users
+# =============================================================================
+
+"""
+A registered user of the platform
+
+Users can be customers, sellers, or administrators. Each user has a profile,
+can place orders, write reviews, and manage their wishlist.
+
+**Circular Reference:** User -> Order -> User (orderBy)
+**Circular Reference:** User -> Review -> User (author)
+"""
+type User implements Timestamped & SoftDeletable {
+  """Unique identifier for the user"""
+  id: UUID!
+  """User's email address (unique)"""
+  email: String!
+  """User's display name"""
+  displayName: String!
+  """URL to user's avatar image"""
+  avatarUrl: String
+  """User's account status"""
+  status: UserStatus!
+  """User's role and permissions"""
+  role: UserRole!
+  """User's profile information"""
+  profile: UserProfile
+  """
+  User's shipping addresses
+  @deprecated Use `addressBook` instead for better address management
+  """
+  addresses: [Address!]! @deprecated(reason: "Use `addressBook` instead for better address management")
+  """User's address book with labeled addresses"""
+  addressBook: AddressBook!
+  """Orders placed by this user (creates circular reference with Order.customer)"""
+  orders(
+    """Filter by order status"""
+    status: OrderStatus
+    """Maximum number of orders to return"""
+    first: Int = 10
+    """Cursor for pagination"""
+    after: String
+  ): OrderConnection!
+  """Reviews written by this user (creates circular reference with Review.author)"""
+  reviews(first: Int = 10, after: String): ReviewConnection!
+  """Products in user's wishlist"""
+  wishlist: [Product!]!
+  """User's shopping cart"""
+  cart: Cart
+  """Total amount spent by this user"""
+  totalSpent: Money!
+  """Number of orders placed"""
+  orderCount: Int!
+  """When the user was created"""
+  createdAt: DateTime!
+  """When the user was last updated"""
+  updatedAt: DateTime!
+  """When the user was deleted (soft delete)"""
+  deletedAt: DateTime
+  """Whether the user account is deleted"""
+  isDeleted: Boolean!
+}
+
+"""
+Extended profile information for a user
+"""
+type UserProfile {
+  """User's first name"""
+  firstName: String
+  """User's last name"""
+  lastName: String
+  """User's phone number"""
+  phoneNumber: String
+  """User's date of birth"""
+  dateOfBirth: DateTime
+  """User's bio or description"""
+  bio: String
+  """User's preferred language (ISO 639-1 code)"""
+  preferredLanguage: String
+  """User's preferred currency"""
+  preferredCurrency: Currency
+  """Whether user has opted into marketing emails"""
+  marketingOptIn: Boolean!
+}
+
+"""
+A physical address for shipping or billing
+"""
+type Address {
+  """Unique identifier"""
+  id: UUID!
+  """Street address line 1"""
+  street1: String!
+  """Street address line 2 (apt, suite, etc.)"""
+  street2: String
+  """City name"""
+  city: String!
+  """State or province"""
+  state: String!
+  """Postal/ZIP code"""
+  postalCode: String!
+  """Country code (ISO 3166-1 alpha-2)"""
+  countryCode: String!
+  """Whether this is the default address"""
+  isDefault: Boolean!
+}
+
+"""
+Collection of user addresses with labels
+"""
+type AddressBook {
+  """All addresses in the address book"""
+  addresses: [LabeledAddress!]!
+  """Default shipping address"""
+  defaultShipping: LabeledAddress
+  """Default billing address"""
+  defaultBilling: LabeledAddress
+}
+
+"""
+An address with a user-defined label
+"""
+type LabeledAddress {
+  """The address details"""
+  address: Address!
+  """User-defined label (e.g., "Home", "Work")"""
+  label: String!
+  """Whether this is the default shipping address"""
+  isDefaultShipping: Boolean!
+  """Whether this is the default billing address"""
+  isDefaultBilling: Boolean!
+}
+
+# =============================================================================
+# TYPES - Products
+# =============================================================================
+
+"""
+A product available for purchase
+
+Products belong to categories and can have multiple variants (size, color, etc.).
+Each product tracks inventory and pricing information.
+
+**Circular Reference:** Product -> Category -> Product (products)
+**Deep Nesting:** Product -> variants -> inventory -> warehouse -> region
+"""
+type Product implements Timestamped & SoftDeletable {
+  """Unique identifier"""
+  id: UUID!
+  """URL-friendly slug"""
+  slug: String!
+  """Product name"""
+  name: String!
+  """Short description for listings"""
+  shortDescription: String!
+  """Full product description (supports markdown)"""
+  description: String!
+  """Product images"""
+  images: [ProductImage!]!
+  """Primary/featured image"""
+  primaryImage: ProductImage
+  """Current price"""
+  price: Money!
+  """Original price before discount (if on sale)"""
+  compareAtPrice: Money
+  """Whether product is currently on sale"""
+  isOnSale: Boolean!
+  """Product status"""
+  status: ProductStatus!
+  """
+  Product category (creates circular reference)
+  Category contains a list of products, and each product references its category
+  """
+  category: Category!
+  """Additional categories this product belongs to"""
+  additionalCategories: [Category!]!
+  """Product tags for filtering"""
+  tags: [String!]!
+  """Product variants (size, color combinations)"""
+  variants: [ProductVariant!]!
+  """Total inventory across all variants"""
+  totalInventory: Int!
+  """Whether any variant is in stock"""
+  isInStock: Boolean!
+  """Seller who listed this product"""
+  seller: User!
+  """Product reviews (circular: Review references Product)"""
+  reviews(first: Int = 10, after: String): ReviewConnection!
+  """Average rating (1-5)"""
+  averageRating: Float
+  """Total number of reviews"""
+  reviewCount: Int!
+  """Related products (for "You might also like")"""
+  relatedProducts(first: Int = 4): [Product!]!
+  """Products frequently bought together"""
+  frequentlyBoughtWith: [Product!]!
+  """Product specifications/attributes"""
+  specifications: [ProductSpecification!]!
+  """SEO metadata"""
+  seo: SEOMetadata
+  """When created"""
+  createdAt: DateTime!
+  """When last updated"""
+  updatedAt: DateTime!
+  """When deleted (soft delete)"""
+  deletedAt: DateTime
+  """Whether deleted"""
+  isDeleted: Boolean!
+}
+
+"""
+A specific variant of a product (e.g., "Large, Blue")
+"""
+type ProductVariant {
+  """Unique identifier"""
+  id: UUID!
+  """SKU (Stock Keeping Unit)"""
+  sku: String!
+  """Variant name (e.g., "Large / Blue")"""
+  name: String!
+  """Variant-specific price (if different from base)"""
+  price: Money
+  """Variant options (size, color, etc.)"""
+  options: [VariantOption!]!
+  """Inventory information - contains warehouse details (deep nesting)"""
+  inventory: InventoryInfo!
+  """Weight in grams (for shipping calculation)"""
+  weightGrams: Int
+  """Whether this variant is available for purchase"""
+  isAvailable: Boolean!
+}
+
+"""
+A single option for a variant (e.g., "Size: Large")
+"""
+type VariantOption {
+  """Option name (e.g., "Size")"""
+  name: String!
+  """Option value (e.g., "Large")"""
+  value: String!
+}
+
+"""
+Inventory information for a product variant
+
+This type demonstrates deep nesting: Product -> Variant -> Inventory -> Warehouse -> Region
+"""
+type InventoryInfo {
+  """Total quantity across all warehouses"""
+  totalQuantity: Int!
+  """Quantity available for sale (excludes reserved)"""
+  availableQuantity: Int!
+  """Quantity reserved in carts"""
+  reservedQuantity: Int!
+  """Per-warehouse breakdown"""
+  warehouseStock: [WarehouseStock!]!
+  """Whether to allow backorders"""
+  allowBackorder: Boolean!
+  """Restock threshold for alerts"""
+  restockThreshold: Int
+}
+
+"""
+Stock information at a specific warehouse
+"""
+type WarehouseStock {
+  """The warehouse"""
+  warehouse: Warehouse!
+  """Quantity at this warehouse"""
+  quantity: Int!
+  """Whether this location can fulfill orders"""
+  canFulfill: Boolean!
+}
+
+"""
+A physical warehouse location
+"""
+type Warehouse {
+  """Unique identifier"""
+  id: UUID!
+  """Warehouse name"""
+  name: String!
+  """Warehouse code"""
+  code: String!
+  """Geographic region"""
+  region: Region!
+  """Warehouse address"""
+  address: Address!
+  """Whether warehouse is currently operational"""
+  isActive: Boolean!
+}
+
+"""
+A geographic region for shipping and warehousing
+
+This is the deepest level of nesting in the Product hierarchy.
+"""
+type Region {
+  """Unique identifier"""
+  id: UUID!
+  """Region name (e.g., "North America")"""
+  name: String!
+  """Region code (e.g., "NA")"""
+  code: String!
+  """Countries in this region"""
+  countries: [String!]!
+  """Default currency for this region"""
+  defaultCurrency: Currency!
+  """Available shipping methods"""
+  shippingMethods: [ShippingMethod!]!
+}
+
+"""
+Product image with multiple sizes
+"""
+type ProductImage {
+  """Unique identifier"""
+  id: UUID!
+  """Original image URL"""
+  url: String!
+  """Thumbnail URL (100x100)"""
+  thumbnailUrl: String!
+  """Medium size URL (400x400)"""
+  mediumUrl: String!
+  """Large size URL (800x800)"""
+  largeUrl: String!
+  """Alt text for accessibility"""
+  altText: String
+  """Display order"""
+  sortOrder: Int!
+}
+
+"""
+A key-value specification for a product
+"""
+type ProductSpecification {
+  """Specification name (e.g., "Material")"""
+  name: String!
+  """Specification value (e.g., "100% Cotton")"""
+  value: String!
+  """Optional unit (e.g., "cm", "kg")"""
+  unit: String
+}
+
+"""
+Product category with hierarchical structure
+
+Categories form a tree structure and contain products.
+**Circular Reference:** Category -> Product -> Category
+"""
+type Category implements Timestamped {
+  """Unique identifier"""
+  id: UUID!
+  """URL-friendly slug"""
+  slug: String!
+  """Category name"""
+  name: String!
+  """Category description"""
+  description: String
+  """Category image URL"""
+  imageUrl: String
+  """Parent category (for hierarchy)"""
+  parent: Category
+  """Child categories"""
+  children: [Category!]!
+  """Full path from root (e.g., "Electronics > Phones > Smartphones")"""
+  breadcrumb: [Category!]!
+  """Products in this category (circular reference with Product.category)"""
+  products(
+    first: Int = 20
+    after: String
+    sortBy: ProductSortField = CREATED_AT
+    sortDirection: SortDirection = DESC
+  ): ProductConnection!
+  """Total number of products in this category (including subcategories)"""
+  productCount: Int!
+  """When created"""
+  createdAt: DateTime!
+  """When last updated"""
+  updatedAt: DateTime!
+}
+
+"""
+SEO metadata for products and pages
+"""
+type SEOMetadata {
+  """Meta title"""
+  title: String
+  """Meta description"""
+  description: String
+  """Meta keywords"""
+  keywords: [String!]
+  """Canonical URL"""
+  canonicalUrl: String
+  """Open Graph image URL"""
+  ogImage: String
+}
+
+# =============================================================================
+# TYPES - Orders
+# =============================================================================
+
+"""
+A customer order
+
+Orders track the purchase lifecycle from cart to delivery.
+**Circular Reference:** Order -> User -> Orders
+"""
+type Order implements Timestamped {
+  """Unique identifier"""
+  id: UUID!
+  """Human-readable order number"""
+  orderNumber: String!
+  """Customer who placed the order (circular reference)"""
+  customer: User!
+  """Current order status"""
+  status: OrderStatus!
+  """Order line items"""
+  items: [OrderItem!]!
+  """Subtotal before tax and shipping"""
+  subtotal: Money!
+  """Tax amount"""
+  taxAmount: Money!
+  """Shipping cost"""
+  shippingAmount: Money!
+  """Discount amount"""
+  discountAmount: Money!
+  """Total order amount"""
+  total: Money!
+  """Currency used for this order"""
+  currency: Currency!
+  """Shipping address"""
+  shippingAddress: Address!
+  """Billing address"""
+  billingAddress: Address!
+  """Payment information"""
+  payment: PaymentInfo!
+  """Shipping information"""
+  shipping: ShippingInfo
+  """Applied coupon codes"""
+  appliedCoupons: [Coupon!]!
+  """Order notes from customer"""
+  customerNotes: String
+  """Internal notes (admin only)"""
+  internalNotes: String
+  """Order history/timeline"""
+  timeline: [OrderEvent!]!
+  """When created"""
+  createdAt: DateTime!
+  """When last updated"""
+  updatedAt: DateTime!
+}
+
+"""
+A line item in an order
+"""
+type OrderItem {
+  """Unique identifier"""
+  id: UUID!
+  """The product ordered"""
+  product: Product!
+  """The specific variant ordered"""
+  variant: ProductVariant
+  """Quantity ordered"""
+  quantity: Int!
+  """Price per unit at time of order"""
+  unitPrice: Money!
+  """Total price for this line item"""
+  totalPrice: Money!
+  """Any customization options selected"""
+  customizations: [OrderItemCustomization!]
+}
+
+"""
+Customization applied to an order item
+"""
+type OrderItemCustomization {
+  """Customization name"""
+  name: String!
+  """Customization value"""
+  value: String!
+  """Additional cost for this customization"""
+  additionalCost: Money
+}
+
+"""
+Payment information for an order
+"""
+type PaymentInfo {
+  """Payment method used"""
+  method: PaymentMethod!
+  """Payment status"""
+  status: String!
+  """Transaction ID from payment processor"""
+  transactionId: String
+  """Last 4 digits of card (if applicable)"""
+  cardLast4: String
+  """Card brand (if applicable)"""
+  cardBrand: String
+  """When payment was processed"""
+  processedAt: DateTime
+}
+
+"""
+Shipping information for an order
+"""
+type ShippingInfo {
+  """Shipping method selected"""
+  method: ShippingMethod!
+  """Carrier name"""
+  carrier: String
+  """Tracking number"""
+  trackingNumber: String
+  """Tracking URL"""
+  trackingUrl: String
+  """Estimated delivery date"""
+  estimatedDelivery: DateTime
+  """Actual delivery date"""
+  deliveredAt: DateTime
+}
+
+"""
+Available shipping method
+"""
+type ShippingMethod {
+  """Unique identifier"""
+  id: UUID!
+  """Method name (e.g., "Standard Shipping")"""
+  name: String!
+  """Method description"""
+  description: String
+  """Base cost"""
+  baseCost: Money!
+  """Estimated delivery days (min)"""
+  estimatedDaysMin: Int!
+  """Estimated delivery days (max)"""
+  estimatedDaysMax: Int!
+  """Whether this method is available"""
+  isAvailable: Boolean!
+}
+
+"""
+A coupon/discount code
+"""
+type Coupon {
+  """Coupon code"""
+  code: String!
+  """Discount description"""
+  description: String!
+  """Discount amount or percentage"""
+  discountValue: String!
+  """Whether this is a percentage discount"""
+  isPercentage: Boolean!
+}
+
+"""
+An event in the order timeline
+"""
+type OrderEvent {
+  """Event type"""
+  type: String!
+  """Event description"""
+  description: String!
+  """When the event occurred"""
+  occurredAt: DateTime!
+  """User who triggered the event (if applicable)"""
+  actor: User
+}
+
+"""
+User's shopping cart
+"""
+type Cart {
+  """Unique identifier"""
+  id: UUID!
+  """Cart items"""
+  items: [CartItem!]!
+  """Number of items in cart"""
+  itemCount: Int!
+  """Cart subtotal"""
+  subtotal: Money!
+  """Estimated tax"""
+  estimatedTax: Money
+  """Estimated total"""
+  estimatedTotal: Money!
+  """Applied coupon codes"""
+  appliedCoupons: [Coupon!]!
+  """When cart was last updated"""
+  updatedAt: DateTime!
+}
+
+"""
+An item in the shopping cart
+"""
+type CartItem {
+  """Unique identifier"""
+  id: UUID!
+  """The product"""
+  product: Product!
+  """The specific variant"""
+  variant: ProductVariant
+  """Quantity in cart"""
+  quantity: Int!
+  """Unit price"""
+  unitPrice: Money!
+  """Total price for this item"""
+  totalPrice: Money!
+}
+
+"""
+Error returned when checkout fails
+"""
+type CheckoutError {
+  """Error code"""
+  code: String!
+  """Human-readable error message"""
+  message: String!
+  """Field that caused the error (if applicable)"""
+  field: String
+  """Suggested action to resolve"""
+  suggestion: String
+}
+
+"""
+Returned when payment is still processing
+"""
+type PaymentPending {
+  """Pending payment ID"""
+  paymentId: UUID!
+  """Expected completion time"""
+  expectedCompletionAt: DateTime
+  """URL to check payment status"""
+  statusUrl: String!
+  """Instructions for the user"""
+  instructions: String
+}
+
+# =============================================================================
+# TYPES - Reviews
+# =============================================================================
+
+"""
+A product review written by a user
+
+**Circular Reference:** Review -> User -> Reviews
+**Circular Reference:** Review -> Product -> Reviews
+"""
+type Review implements Timestamped & Moderatable {
+  """Unique identifier"""
+  id: UUID!
+  """The product being reviewed"""
+  product: Product!
+  """The user who wrote the review (circular reference)"""
+  author: User!
+  """Rating from 1 to 5"""
+  rating: Int!
+  """Review title"""
+  title: String
+  """Review body text"""
+  body: String!
+  """Pros mentioned by reviewer"""
+  pros: [String!]
+  """Cons mentioned by reviewer"""
+  cons: [String!]
+  """Attached images"""
+  images: [ReviewImage!]
+  """Whether reviewer is a verified purchaser"""
+  isVerifiedPurchase: Boolean!
+  """Number of users who found this helpful"""
+  helpfulCount: Int!
+  """Number of users who found this unhelpful"""
+  unhelpfulCount: Int!
+  """Replies to this review"""
+  replies: [ReviewReply!]!
+  """Whether approved by moderators"""
+  isApproved: Boolean!
+  """When moderated"""
+  moderatedAt: DateTime
+  """Who moderated"""
+  moderatedBy: User
+  """When created"""
+  createdAt: DateTime!
+  """When last updated"""
+  updatedAt: DateTime!
+}
+
+"""
+Image attached to a review
+"""
+type ReviewImage {
+  """Image URL"""
+  url: String!
+  """Image caption"""
+  caption: String
+}
+
+"""
+A reply to a review (typically from seller)
+"""
+type ReviewReply {
+  """Unique identifier"""
+  id: UUID!
+  """Reply author"""
+  author: User!
+  """Reply text"""
+  body: String!
+  """Whether this is an official seller response"""
+  isSellerResponse: Boolean!
+  """When created"""
+  createdAt: DateTime!
+}
+
+# =============================================================================
+# TYPES - Notifications
+# =============================================================================
+
+"""
+A notification sent to a user
+"""
+type Notification implements Timestamped {
+  """Unique identifier"""
+  id: UUID!
+  """Notification type"""
+  type: NotificationType!
+  """Notification title"""
+  title: String!
+  """Notification body"""
+  body: String!
+  """The target entity this notification is about"""
+  target: NotificationTarget
+  """Whether the notification has been read"""
+  isRead: Boolean!
+  """When the notification was read"""
+  readAt: DateTime
+  """Action URL (if applicable)"""
+  actionUrl: String
+  """When created"""
+  createdAt: DateTime!
+  """When last updated"""
+  updatedAt: DateTime!
+}
+
+# =============================================================================
+# TYPES - Pagination
+# =============================================================================
+
+"""
+Pagination information following the Relay spec
+"""
+type PageInfo {
+  """Whether there are more items after"""
+  hasNextPage: Boolean!
+  """Whether there are more items before"""
+  hasPreviousPage: Boolean!
+  """Cursor of the first item"""
+  startCursor: String
+  """Cursor of the last item"""
+  endCursor: String
+  """Total count of items"""
+  totalCount: Int!
+}
+
+"""
+Paginated list of products
+"""
+type ProductConnection {
+  """The products"""
+  edges: [ProductEdge!]!
+  """Pagination info"""
+  pageInfo: PageInfo!
+}
+
+"""
+Product edge for pagination
+"""
+type ProductEdge {
+  """The product"""
+  node: Product!
+  """Pagination cursor"""
+  cursor: String!
+}
+
+"""
+Paginated list of orders
+"""
+type OrderConnection {
+  """The orders"""
+  edges: [OrderEdge!]!
+  """Pagination info"""
+  pageInfo: PageInfo!
+}
+
+"""
+Order edge for pagination
+"""
+type OrderEdge {
+  """The order"""
+  node: Order!
+  """Pagination cursor"""
+  cursor: String!
+}
+
+"""
+Paginated list of reviews
+"""
+type ReviewConnection {
+  """The reviews"""
+  edges: [ReviewEdge!]!
+  """Pagination info"""
+  pageInfo: PageInfo!
+}
+
+"""
+Review edge for pagination
+"""
+type ReviewEdge {
+  """The review"""
+  node: Review!
+  """Pagination cursor"""
+  cursor: String!
+}
+
+# =============================================================================
+# INPUT TYPES
+# =============================================================================
+
+"""
+Input for creating a new user account
+"""
+input CreateUserInput {
+  """User's email address"""
+  email: String!
+  """User's password"""
+  password: String!
+  """User's display name"""
+  displayName: String!
+  """Initial profile information"""
+  profile: UserProfileInput
+}
+
+"""
+Input for updating user profile
+"""
+input UserProfileInput {
+  """First name"""
+  firstName: String
+  """Last name"""
+  lastName: String
+  """Phone number"""
+  phoneNumber: String
+  """Date of birth"""
+  dateOfBirth: DateTime
+  """Bio/description"""
+  bio: String
+  """Preferred language code"""
+  preferredLanguage: String
+  """Preferred currency"""
+  preferredCurrency: Currency
+  """Marketing opt-in"""
+  marketingOptIn: Boolean
+}
+
+"""
+Input for creating/updating an address
+"""
+input AddressInput {
+  """Street address line 1"""
+  street1: String!
+  """Street address line 2"""
+  street2: String
+  """City"""
+  city: String!
+  """State/province"""
+  state: String!
+  """Postal code"""
+  postalCode: String!
+  """Country code"""
+  countryCode: String!
+  """Address label"""
+  label: String
+  """Set as default shipping"""
+  isDefaultShipping: Boolean
+  """Set as default billing"""
+  isDefaultBilling: Boolean
+}
+
+"""
+Input for creating a new product
+"""
+input CreateProductInput {
+  """Product name"""
+  name: String!
+  """Short description"""
+  shortDescription: String!
+  """Full description"""
+  description: String!
+  """Base price"""
+  price: Money!
+  """Compare-at price"""
+  compareAtPrice: Money
+  """Category ID"""
+  categoryId: UUID!
+  """Additional category IDs"""
+  additionalCategoryIds: [UUID!]
+  """Product tags"""
+  tags: [String!]
+  """Product variants"""
+  variants: [ProductVariantInput!]
+  """Product specifications"""
+  specifications: [ProductSpecificationInput!]
+  """SEO metadata"""
+  seo: SEOInput
+  """Initial status"""
+  status: ProductStatus = HIDDEN
+}
+
+"""
+Input for updating a product
+"""
+input UpdateProductInput {
+  """Product name"""
+  name: String
+  """Short description"""
+  shortDescription: String
+  """Full description"""
+  description: String
+  """Base price"""
+  price: Money
+  """Compare-at price"""
+  compareAtPrice: Money
+  """Category ID"""
+  categoryId: UUID
+  """Additional category IDs"""
+  additionalCategoryIds: [UUID!]
+  """Product tags"""
+  tags: [String!]
+  """Product status"""
+  status: ProductStatus
+  """SEO metadata"""
+  seo: SEOInput
+}
+
+"""
+Input for creating a product variant
+"""
+input ProductVariantInput {
+  """SKU"""
+  sku: String!
+  """Variant name"""
+  name: String!
+  """Variant-specific price"""
+  price: Money
+  """Variant options"""
+  options: [VariantOptionInput!]!
+  """Initial inventory quantity"""
+  initialQuantity: Int!
+  """Weight in grams"""
+  weightGrams: Int
+}
+
+"""
+Input for a variant option
+"""
+input VariantOptionInput {
+  """Option name"""
+  name: String!
+  """Option value"""
+  value: String!
+}
+
+"""
+Input for a product specification
+"""
+input ProductSpecificationInput {
+  """Specification name"""
+  name: String!
+  """Specification value"""
+  value: String!
+  """Unit"""
+  unit: String
+}
+
+"""
+Input for SEO metadata
+"""
+input SEOInput {
+  """Meta title"""
+  title: String
+  """Meta description"""
+  description: String
+  """Meta keywords"""
+  keywords: [String!]
+  """Canonical URL"""
+  canonicalUrl: String
+}
+
+"""
+Input for placing an order
+"""
+input PlaceOrderInput {
+  """Shipping address ID or new address"""
+  shippingAddressId: UUID
+  """New shipping address (if not using existing)"""
+  shippingAddress: AddressInput
+  """Billing address ID or new address"""
+  billingAddressId: UUID
+  """New billing address (if not using existing)"""
+  billingAddress: AddressInput
+  """Use shipping address for billing"""
+  useSameAddress: Boolean
+  """Selected shipping method ID"""
+  shippingMethodId: UUID!
+  """Payment method"""
+  paymentMethod: PaymentMethod!
+  """Payment token from payment processor"""
+  paymentToken: String!
+  """Coupon codes to apply"""
+  couponCodes: [String!]
+  """Customer notes"""
+  notes: String
+}
+
+"""
+Input for adding item to cart
+"""
+input AddToCartInput {
+  """Product ID"""
+  productId: UUID!
+  """Variant ID (required if product has variants)"""
+  variantId: UUID
+  """Quantity to add"""
+  quantity: Int!
+  """Customization options"""
+  customizations: [OrderItemCustomizationInput!]
+}
+
+"""
+Input for order item customization
+"""
+input OrderItemCustomizationInput {
+  """Customization name"""
+  name: String!
+  """Customization value"""
+  value: String!
+}
+
+"""
+Input for updating cart item quantity
+"""
+input UpdateCartItemInput {
+  """Cart item ID"""
+  cartItemId: UUID!
+  """New quantity (0 to remove)"""
+  quantity: Int!
+}
+
+"""
+Input for creating a review
+"""
+input CreateReviewInput {
+  """Product ID"""
+  productId: UUID!
+  """Rating 1-5"""
+  rating: Int!
+  """Review title"""
+  title: String
+  """Review body"""
+  body: String!
+  """Pros"""
+  pros: [String!]
+  """Cons"""
+  cons: [String!]
+}
+
+"""
+Filter options for listing products
+"""
+input ProductFilterInput {
+  """Filter by category ID"""
+  categoryId: UUID
+  """Filter by category IDs"""
+  categoryIds: [UUID!]
+  """Minimum price"""
+  minPrice: Money
+  """Maximum price"""
+  maxPrice: Money
+  """Filter by status"""
+  status: ProductStatus
+  """Filter by seller ID"""
+  sellerId: UUID
+  """Filter by tags"""
+  tags: [String!]
+  """Only show items in stock"""
+  inStockOnly: Boolean
+  """Only show items on sale"""
+  onSaleOnly: Boolean
+  """Minimum rating"""
+  minRating: Float
+  """Search query"""
+  searchQuery: String
+}
+
+"""
+Filter options for listing orders
+"""
+input OrderFilterInput {
+  """Filter by status"""
+  status: OrderStatus
+  """Filter by statuses"""
+  statuses: [OrderStatus!]
+  """Minimum date"""
+  fromDate: DateTime
+  """Maximum date"""
+  toDate: DateTime
+  """Minimum total"""
+  minTotal: Money
+  """Maximum total"""
+  maxTotal: Money
+}
+
+# =============================================================================
+# QUERY TYPE
+# =============================================================================
+
+"""
+Root query type for fetching data
+"""
+type Query {
+  # -------------------------
+  # User Queries
+  # -------------------------
+
+  """
+  Get the currently authenticated user
+
+  Returns null if not authenticated.
+  """
+  me: User
+    @docGroup(name: "User Management", order: 1, subsection: "Queries")
+    @docPriority(level: 1)
+    @docTags(tags: ["users", "read", "auth-required"])
+
+  """
+  Get a user by their ID
+  """
+  user(
+    """The user's unique identifier"""
+    id: UUID!
+  ): User
+    @docGroup(name: "User Management", order: 1, subsection: "Queries")
+    @docPriority(level: 2)
+    @docTags(tags: ["users", "read"])
+
+  """
+  Search for users (admin only)
+  """
+  users(
+    """Search query"""
+    query: String
+    """Filter by role"""
+    role: UserRole
+    """Filter by status"""
+    status: UserStatus
+    """Number of results"""
+    first: Int = 20
+    """Pagination cursor"""
+    after: String
+  ): [User!]!
+    @deprecated(reason: "Use `usersSearch` instead for better filtering options")
+    @docGroup(name: "User Management", order: 1, subsection: "Queries")
+    @docPriority(level: 10)
+    @docTags(tags: ["users", "read", "admin-only", "deprecated"])
+
+  # -------------------------
+  # Product Queries
+  # -------------------------
+
+  """
+  Get a product by ID or slug
+  """
+  product(
+    """Product ID"""
+    id: UUID
+    """Product slug"""
+    slug: String
+  ): Product
+    @docGroup(name: "Product Catalog", order: 2, subsection: "Queries")
+    @docPriority(level: 1)
+    @docTags(tags: ["products", "read", "public"])
+
+  """
+  List products with filtering and pagination
+  """
+  products(
+    """Filter options"""
+    filter: ProductFilterInput
+    """Sort field"""
+    sortBy: ProductSortField = CREATED_AT
+    """Sort direction"""
+    sortDirection: SortDirection = DESC
+    """Number of results"""
+    first: Int = 20
+    """Pagination cursor"""
+    after: String
+  ): ProductConnection!
+    @docGroup(name: "Product Catalog", order: 2, subsection: "Queries")
+    @docPriority(level: 2)
+    @docTags(tags: ["products", "read", "public", "paginated"])
+
+  """
+  Get a category by ID or slug
+  """
+  category(
+    """Category ID"""
+    id: UUID
+    """Category slug"""
+    slug: String
+  ): Category
+    @docGroup(name: "Product Catalog", order: 2, subsection: "Categories")
+    @docPriority(level: 1)
+    @docTags(tags: ["categories", "read", "public"])
+
+  """
+  List all top-level categories
+  """
+  categories: [Category!]!
+    @docGroup(name: "Product Catalog", order: 2, subsection: "Categories")
+    @docPriority(level: 2)
+    @docTags(tags: ["categories", "read", "public"])
+
+  """
+  Search across products, users, and categories
+
+  Returns a union type that can be Product, User, or Category.
+  """
+  search(
+    """Search query"""
+    query: String!
+    """Maximum results"""
+    limit: Int = 20
+  ): [SearchResult!]!
+    @docGroup(name: "Product Catalog", order: 2, subsection: "Search")
+    @docPriority(level: 1)
+    @docTags(tags: ["search", "read", "public"])
+
+  # -------------------------
+  # Order Queries
+  # -------------------------
+
+  """
+  Get an order by ID
+  """
+  order(
+    """Order ID"""
+    id: UUID!
+  ): Order
+    @docGroup(name: "Orders & Checkout", order: 3, subsection: "Queries")
+    @docPriority(level: 1)
+    @docTags(tags: ["orders", "read", "auth-required"])
+
+  """
+  List orders for the current user
+  """
+  myOrders(
+    """Filter options"""
+    filter: OrderFilterInput
+    """Sort direction"""
+    sortDirection: SortDirection = DESC
+    """Number of results"""
+    first: Int = 20
+    """Pagination cursor"""
+    after: String
+  ): OrderConnection!
+    @docGroup(name: "Orders & Checkout", order: 3, subsection: "Queries")
+    @docPriority(level: 2)
+    @docTags(tags: ["orders", "read", "auth-required", "paginated"])
+
+  """
+  Get the current user's cart
+  """
+  cart: Cart
+    @docGroup(name: "Orders & Checkout", order: 3, subsection: "Cart")
+    @docPriority(level: 1)
+    @docTags(tags: ["cart", "read", "auth-required"])
+
+  # -------------------------
+  # Review Queries
+  # -------------------------
+
+  """
+  Get a review by ID
+  """
+  review(
+    """Review ID"""
+    id: UUID!
+  ): Review
+    @docGroup(name: "Reviews & Ratings", order: 4)
+    @docPriority(level: 1)
+    @docTags(tags: ["reviews", "read", "public"])
+}
+
+# =============================================================================
+# MUTATION TYPE
+# =============================================================================
+
+"""
+Root mutation type for modifying data
+"""
+type Mutation {
+  # -------------------------
+  # User Mutations
+  # -------------------------
+
+  """
+  Register a new user account
+  """
+  createUser(
+    """User registration data"""
+    input: CreateUserInput!
+  ): User!
+    @docGroup(name: "User Management", order: 1, subsection: "Mutations")
+    @docPriority(level: 1)
+    @docTags(tags: ["users", "write", "public"])
+
+  """
+  Update the current user's profile
+  """
+  updateProfile(
+    """Profile data to update"""
+    input: UserProfileInput!
+  ): User!
+    @docGroup(name: "User Management", order: 1, subsection: "Mutations")
+    @docPriority(level: 2)
+    @docTags(tags: ["users", "write", "auth-required"])
+
+  """
+  Add an address to the user's address book
+  """
+  addAddress(
+    """Address data"""
+    input: AddressInput!
+  ): LabeledAddress!
+    @docGroup(name: "User Management", order: 1, subsection: "Mutations")
+    @docPriority(level: 3)
+    @docTags(tags: ["users", "write", "auth-required"])
+
+  # -------------------------
+  # Product Mutations
+  # -------------------------
+
+  """
+  Create a new product listing (seller only)
+  """
+  createProduct(
+    """Product data"""
+    input: CreateProductInput!
+  ): Product!
+    @docGroup(name: "Product Catalog", order: 2, subsection: "Mutations")
+    @docPriority(level: 1)
+    @docTags(tags: ["products", "write", "seller-only"])
+
+  """
+  Update an existing product (seller only)
+  """
+  updateProduct(
+    """Product ID"""
+    id: UUID!
+    """Product data to update"""
+    input: UpdateProductInput!
+  ): Product!
+    @docGroup(name: "Product Catalog", order: 2, subsection: "Mutations")
+    @docPriority(level: 2)
+    @docTags(tags: ["products", "write", "seller-only"])
+
+  """
+  Delete a product (soft delete)
+  """
+  deleteProduct(
+    """Product ID"""
+    id: UUID!
+  ): Boolean!
+    @docGroup(name: "Product Catalog", order: 2, subsection: "Mutations")
+    @docPriority(level: 3)
+    @docTags(tags: ["products", "write", "seller-only", "destructive"])
+
+  # -------------------------
+  # Cart & Order Mutations
+  # -------------------------
+
+  """
+  Add an item to the shopping cart
+  """
+  addToCart(
+    """Item to add"""
+    input: AddToCartInput!
+  ): Cart!
+    @docGroup(name: "Orders & Checkout", order: 3, subsection: "Cart")
+    @docPriority(level: 1)
+    @docTags(tags: ["cart", "write", "auth-required"])
+
+  """
+  Update quantity of a cart item
+  """
+  updateCartItem(
+    """Update data"""
+    input: UpdateCartItemInput!
+  ): Cart!
+    @docGroup(name: "Orders & Checkout", order: 3, subsection: "Cart")
+    @docPriority(level: 2)
+    @docTags(tags: ["cart", "write", "auth-required"])
+
+  """
+  Remove an item from the cart
+  """
+  removeFromCart(
+    """Cart item ID to remove"""
+    cartItemId: UUID!
+  ): Cart!
+    @docGroup(name: "Orders & Checkout", order: 3, subsection: "Cart")
+    @docPriority(level: 3)
+    @docTags(tags: ["cart", "write", "auth-required"])
+
+  """
+  Place an order from the current cart
+
+  Returns either an Order on success, CheckoutError on failure,
+  or PaymentPending if payment is still processing.
+  """
+  placeOrder(
+    """Order placement data"""
+    input: PlaceOrderInput!
+  ): CheckoutResult!
+    @docGroup(name: "Orders & Checkout", order: 3, subsection: "Checkout")
+    @docPriority(level: 1)
+    @docTags(tags: ["orders", "write", "auth-required", "payment"])
+
+  # -------------------------
+  # Review Mutations
+  # -------------------------
+
+  """
+  Create a review for a product
+  """
+  createReview(
+    """Review data"""
+    input: CreateReviewInput!
+  ): Review!
+    @docGroup(name: "Reviews & Ratings", order: 4)
+    @docPriority(level: 1)
+    @docTags(tags: ["reviews", "write", "auth-required"])
+
+  """
+  Mark a review as helpful
+  """
+  markReviewHelpful(
+    """Review ID"""
+    reviewId: UUID!
+    """Whether helpful (true) or not helpful (false)"""
+    helpful: Boolean!
+  ): Review!
+    @docGroup(name: "Reviews & Ratings", order: 4)
+    @docPriority(level: 2)
+    @docTags(tags: ["reviews", "write", "auth-required"])
+}
+
+# =============================================================================
+# SUBSCRIPTION TYPE
+# =============================================================================
+
+"""
+Root subscription type for real-time updates
+"""
+type Subscription {
+  """
+  Subscribe to order status updates
+
+  Receives real-time updates when the status of an order changes.
+  Useful for showing live order tracking to customers.
+  """
+  orderStatusChanged(
+    """Order ID to subscribe to"""
+    orderId: UUID!
+  ): Order!
+    @docGroup(name: "Orders & Checkout", order: 3, subsection: "Subscriptions")
+    @docPriority(level: 1)
+    @docTags(tags: ["orders", "realtime", "auth-required"])
+
+  """
+  Subscribe to notifications for the current user
+
+  Receives real-time notifications including order updates,
+  price alerts, stock alerts, and system messages.
+  """
+  notificationReceived: Notification!
+    @docGroup(name: "Notifications", order: 5)
+    @docPriority(level: 1)
+    @docTags(tags: ["notifications", "realtime", "auth-required"])
+}

@@ -1,0 +1,36 @@
+---
+id: my-orders
+title: myOrders
+sidebar_label: myOrders
+tags: ["orders", "read", "auth-required", "paginated"]
+hide_title: true
+---
+
+# myOrders
+
+
+List orders for the current user
+
+**Type:** `query`
+
+### Arguments
+
+| Name | Type | Description |
+| :--- | :--- | :--- |
+| `filter` | [`OrderFilterInput`](#order-filter-input) | Filter options |
+| `sortDirection` | [`SortDirection`](#sort-direction) | Sort direction |
+| `first` | `Int` | Number of results |
+| `after` | `String` | Pagination cursor |
+
+### Return Type
+
+[`OrderConnection`](#order-connection)
+Paginated list of orders
+
+#### Fields
+
+| Name | Type | Description |
+| :--- | :--- | :--- |
+| `edges` | [[`OrderEdge`](#order-edge)] | The orders |
+| `pageInfo` | [`PageInfo`](#page-info) | Pagination info |
+

@@ -1,0 +1,39 @@
+---
+id: update-cart-item
+title: updateCartItem
+sidebar_label: updateCartItem
+tags: ["cart", "write", "auth-required"]
+hide_title: true
+---
+
+# updateCartItem
+
+
+Update quantity of a cart item
+
+**Type:** `mutation`
+
+### Arguments
+
+| Name | Type | Description |
+| :--- | :--- | :--- |
+| `input` | [`UpdateCartItemInput`](#update-cart-item-input) | Update data |
+
+### Return Type
+
+[`Cart`](#cart)
+User&#x27;s shopping cart
+
+#### Fields
+
+| Name | Type | Description |
+| :--- | :--- | :--- |
+| `id` | `UUID` | Unique identifier |
+| `items` | [[`CartItem`](#cart-item)] | Cart items |
+| `itemCount` | `Int` | Number of items in cart |
+| `subtotal` | `Money` | Cart subtotal |
+| `estimatedTax` | `Money` | Estimated tax |
+| `estimatedTotal` | `Money` | Estimated total |
+| `appliedCoupons` | [[`Coupon`](#coupon)] | Applied coupon codes |
+| `updatedAt` | `DateTime` | When cart was last updated |
+

@@ -1,0 +1,59 @@
+[
+  {
+    "operation": "borrowBook",
+    "operationType": "mutation",
+    "examples": [
+      {
+        "name": "Borrow Book",
+        "description": "Borrow a book for a member",
+        "query": "mutation BorrowBook($bookId: ID!, $memberId: ID!) {\n  borrowBook(bookId: $bookId, memberId: $memberId) {\n    id\n    dueDate\n    book {\n      title\n    }\n  }\n}",
+        "variables": {
+          "bookId": "bk_123",
+          "memberId": "mem_456"
+        },
+        "response": {
+          "type": "success",
+          "httpStatus": 200,
+          "body": {
+            "data": {
+              "borrowBook": {
+                "id": "loan_789",
+                "dueDate": "2024-02-15",
+                "book": {
+                  "title": "The Great Gatsby"
+                }
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "operation": "returnBook",
+    "operationType": "mutation",
+    "examples": [
+      {
+        "name": "Return Book",
+        "description": "Return a borrowed book",
+        "query": "mutation ReturnBook($loanId: ID!) {\n  returnBook(loanId: $loanId) {\n    id\n    returnedDate\n    isOverdue\n  }\n}",
+        "variables": {
+          "loanId": "loan_789"
+        },
+        "response": {
+          "type": "success",
+          "httpStatus": 200,
+          "body": {
+            "data": {
+              "returnBook": {
+                "id": "loan_789",
+                "returnedDate": "2024-02-10",
+                "isOverdue": false
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+]

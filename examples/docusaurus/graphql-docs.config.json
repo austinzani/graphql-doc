@@ -1,0 +1,14 @@
+{
+  "$schema": "../../src/schemas/config-schema.json",
+  "outputDir": "./docs/api",
+  "framework": "docusaurus",
+  "singlePage": false,
+  "includeDeprecated": true,
+  "generateSidebar": true,
+  "sidebarFile": "./sidebars-api.js",
+  "typeExpansion": {
+    "maxDepth": 6,
+    "defaultLevels": 3,
+    "showCircularReferences": true
+  }
+}

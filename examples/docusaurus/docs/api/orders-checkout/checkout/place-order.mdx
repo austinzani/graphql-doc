@@ -1,0 +1,30 @@
+---
+id: place-order
+title: placeOrder
+sidebar_label: placeOrder
+tags: ["orders", "write", "auth-required", "payment"]
+hide_title: true
+---
+
+# placeOrder
+
+
+Place an order from the current cart
+
+Returns either an Order on success, CheckoutError on failure,
+or PaymentPending if payment is still processing.
+
+**Type:** `mutation`
+
+### Arguments
+
+| Name | Type | Description |
+| :--- | :--- | :--- |
+| `input` | [`PlaceOrderInput`](#place-order-input) | Order placement data |
+
+### Return Type
+
+[`CheckoutResult`](#checkout-result)
+Possible results of a checkout operation
+
+

@@ -1,0 +1,47 @@
+---
+id: category
+title: category
+sidebar_label: category
+tags: ["categories", "read", "public"]
+hide_title: true
+---
+
+# category
+
+
+Get a category by ID or slug
+
+**Type:** `query`
+
+### Arguments
+
+| Name | Type | Description |
+| :--- | :--- | :--- |
+| `id` | `UUID` | Category ID |
+| `slug` | `String` | Category slug |
+
+### Return Type
+
+[`Category`](#category)
+Product category with hierarchical structure
+
+Categories form a tree structure and contain products.
+**Circular Reference:** Category -&gt; Product -&gt; Category
+
+#### Fields
+
+| Name | Type | Description |
+| :--- | :--- | :--- |
+| `id` | `UUID` | Unique identifier |
+| `slug` | `String` | URL-friendly slug |
+| `name` | `String` | Category name |
+| `description` | `String` | Category description |
+| `imageUrl` | `String` | Category image URL |
+| `parent` | [``](#) | Parent category (for hierarchy) |
+| `children` | [[``](#)] | Child categories |
+| `breadcrumb` | [[``](#)] | Full path from root (e.g., &quot;Electronics &gt; Phones &gt; Smartphones&quot;) |
+| `products` | [`ProductConnection`](#product-connection) | Products in this category (circular reference with Product.category) |
+| `productCount` | `Int` | Total number of products in this category (including subcategories) |
+| `createdAt` | `DateTime` | When created |
+| `updatedAt` | `DateTime` | When last updated |
+

@@ -1,0 +1,39 @@
+---
+id: add-to-cart
+title: addToCart
+sidebar_label: addToCart
+tags: ["cart", "write", "auth-required"]
+hide_title: true
+---
+
+# addToCart
+
+
+Add an item to the shopping cart
+
+**Type:** `mutation`
+
+### Arguments
+
+| Name | Type | Description |
+| :--- | :--- | :--- |
+| `input` | [`AddToCartInput`](#add-to-cart-input) | Item to add |
+
+### Return Type
+
+[`Cart`](#cart)
+User&#x27;s shopping cart
+
+#### Fields
+
+| Name | Type | Description |
+| :--- | :--- | :--- |
+| `id` | `UUID` | Unique identifier |
+| `items` | [[`CartItem`](#cart-item)] | Cart items |
+| `itemCount` | `Int` | Number of items in cart |
+| `subtotal` | `Money` | Cart subtotal |
+| `estimatedTax` | `Money` | Estimated tax |
+| `estimatedTotal` | `Money` | Estimated total |
+| `appliedCoupons` | [[`Coupon`](#coupon)] | Applied coupon codes |
+| `updatedAt` | `DateTime` | When cart was last updated |
+

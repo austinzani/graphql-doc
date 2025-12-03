@@ -1,0 +1,218 @@
+[
+  {
+    "operation": "placeOrder",
+    "operationType": "mutation",
+    "examples": [
+      {
+        "name": "Place Standard Order",
+        "description": "Place a standard order with credit card payment",
+        "query": "mutation PlaceOrder($input: PlaceOrderInput!) {\n  placeOrder(input: $input) {\n    ... on Order {\n      id\n      orderNumber\n      status\n      total\n    }\n    ... on CheckoutError {\n      code\n      message\n    }\n  }\n}",
+        "variables": {
+          "input": {
+            "items": [
+              {
+                "productId": "prod_123",
+                "quantity": 1
+              }
+            ],
+            "shippingAddressId": "addr_456",
+            "paymentMethod": "CARD"
+          }
+        },
+        "response": {
+          "type": "success",
+          "httpStatus": 200,
+          "body": {
+            "data": {
+              "placeOrder": {
+                "id": "ord_789",
+                "orderNumber": "ORD-2024-001",
+                "status": "PENDING",
+                "total": "99.99"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "operation": "order",
+    "operationType": "query",
+    "examples": [
+      {
+        "name": "Get Order Details",
+        "description": "Retrieve details for a specific order",
+        "query": "query GetOrder($id: UUID!) {\n  order(id: $id) {\n    orderNumber\n    status\n    total\n    items {\n      product {\n        name\n      }\n      quantity\n    }\n  }\n}",
+        "variables": {
+          "id": "ord_789"
+        },
+        "response": {
+          "type": "success",
+          "httpStatus": 200,
+          "body": {
+            "data": {
+              "order": {
+                "orderNumber": "ORD-2024-001",
+                "status": "PENDING",
+                "total": "99.99",
+                "items": [
+                  {
+                    "product": {
+                      "name": "T-Shirt"
+                    },
+                    "quantity": 2
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "operation": "myOrders",
+    "operationType": "query",
+    "examples": [
+      {
+        "name": "List My Orders",
+        "description": "Get a paginated list of user's orders",
+        "query": "query MyOrders($first: Int) {\n  myOrders(first: $first) {\n    edges {\n      node {\n        orderNumber\n        createdAt\n        total\n      }\n    }\n  }\n}",
+        "variables": {
+          "first": 5
+        },
+        "response": {
+          "type": "success",
+          "httpStatus": 200,
+          "body": {
+            "data": {
+              "myOrders": {
+                "edges": [
+                  {
+                    "node": {
+                      "orderNumber": "ORD-2024-001",
+                      "createdAt": "2024-01-15T10:00:00Z",
+                      "total": "99.99"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "operation": "cart",
+    "operationType": "query",
+    "examples": [
+      {
+        "name": "Get Cart",
+        "description": "Retrieve current shopping cart",
+        "query": "query GetCart {\n  cart {\n    id\n    total\n    itemCount\n  }\n}",
+        "variables": {},
+        "response": {
+          "type": "success",
+          "httpStatus": 200,
+          "body": {
+            "data": {
+              "cart": {
+                "id": "cart_123",
+                "total": "49.99",
+                "itemCount": 1
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "operation": "addToCart",
+    "operationType": "mutation",
+    "examples": [
+      {
+        "name": "Add Item",
+        "description": "Add a product to cart",
+        "query": "mutation AddToCart($input: AddToCartInput!) {\n  addToCart(input: $input) {\n    itemCount\n    total\n  }\n}",
+        "variables": {
+          "input": {
+            "productId": "prod_456",
+            "quantity": 1
+          }
+        },
+        "response": {
+          "type": "success",
+          "httpStatus": 200,
+          "body": {
+            "data": {
+              "addToCart": {
+                "itemCount": 2,
+                "total": "79.98"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "operation": "updateCartItem",
+    "operationType": "mutation",
+    "examples": [
+      {
+        "name": "Update Quantity",
+        "description": "Change item quantity in cart",
+        "query": "mutation UpdateCartItem($input: UpdateCartItemInput!) {\n  updateCartItem(input: $input) {\n    items {\n      quantity\n    }\n  }\n}",
+        "variables": {
+          "input": {
+            "itemId": "item_789",
+            "quantity": 3
+          }
+        },
+        "response": {
+          "type": "success",
+          "httpStatus": 200,
+          "body": {
+            "data": {
+              "updateCartItem": {
+                "items": [
+                  {
+                    "quantity": 3
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "operation": "removeFromCart",
+    "operationType": "mutation",
+    "examples": [
+      {
+        "name": "Remove Item",
+        "description": "Remove an item from cart",
+        "query": "mutation RemoveFromCart($id: UUID!) {\n  removeFromCart(cartItemId: $id) {\n    itemCount\n  }\n}",
+        "variables": {
+          "id": "item_789"
+        },
+        "response": {
+          "type": "success",
+          "httpStatus": 200,
+          "body": {
+            "data": {
+              "removeFromCart": {
+                "itemCount": 1
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+]

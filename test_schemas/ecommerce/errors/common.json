@@ -1,0 +1,27 @@
+{
+  "category": "Common Errors",
+  "operations": ["*"],
+  "errors": [
+    {
+      "code": "UNAUTHENTICATED",
+      "message": "Authentication required",
+      "description": "The operation requires authentication but no valid credentials were provided.",
+      "resolution": "Provide a valid Bearer token in the Authorization header.",
+      "httpStatus": 401
+    },
+    {
+      "code": "FORBIDDEN",
+      "message": "Access denied",
+      "description": "The authenticated user does not have permission to perform this action.",
+      "resolution": "Check the user's role and permissions.",
+      "httpStatus": 403
+    },
+    {
+      "code": "NOT_FOUND",
+      "message": "Resource not found",
+      "description": "The requested resource could not be found.",
+      "resolution": "Verify the ID or other identifiers used in the request.",
+      "httpStatus": 404
+    }
+  ]
+}

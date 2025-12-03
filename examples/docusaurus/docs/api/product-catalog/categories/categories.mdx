@@ -1,0 +1,38 @@
+---
+id: categories
+title: categories
+sidebar_label: categories
+tags: ["categories", "read", "public"]
+hide_title: true
+---
+
+# categories
+
+
+List all top-level categories
+
+**Type:** `query`
+
+
+### Return Type
+
+[[`Category`](#category)]
+
+
+#### Fields
+
+| Name | Type | Description |
+| :--- | :--- | :--- |
+| `id` | `UUID` | Unique identifier |
+| `slug` | `String` | URL-friendly slug |
+| `name` | `String` | Category name |
+| `description` | `String` | Category description |
+| `imageUrl` | `String` | Category image URL |
+| `parent` | [``](#) | Parent category (for hierarchy) |
+| `children` | [[``](#)] | Child categories |
+| `breadcrumb` | [[``](#)] | Full path from root (e.g., &quot;Electronics &gt; Phones &gt; Smartphones&quot;) |
+| `products` | [`ProductConnection`](#product-connection) | Products in this category (circular reference with Product.category) |
+| `productCount` | `Int` | Total number of products in this category (including subcategories) |
+| `createdAt` | `DateTime` | When created |
+| `updatedAt` | `DateTime` | When last updated |
+

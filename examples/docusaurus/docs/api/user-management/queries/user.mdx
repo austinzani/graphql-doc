@@ -1,0 +1,57 @@
+---
+id: user
+title: user
+sidebar_label: user
+tags: ["users", "read"]
+hide_title: true
+---
+
+# user
+
+
+Get a user by their ID
+
+**Type:** `query`
+
+### Arguments
+
+| Name | Type | Description |
+| :--- | :--- | :--- |
+| `id` | `UUID` | The user&#x27;s unique identifier |
+
+### Return Type
+
+[`User`](#user)
+A registered user of the platform
+
+Users can be customers, sellers, or administrators. Each user has a profile,
+can place orders, write reviews, and manage their wishlist.
+
+**Circular Reference:** User -&gt; Order -&gt; User (orderBy)
+**Circular Reference:** User -&gt; Review -&gt; User (author)
+
+#### Fields
+
+| Name | Type | Description |
+| :--- | :--- | :--- |
+| `id` | `UUID` | Unique identifier for the user |
+| `email` | `String` | User&#x27;s email address (unique) |
+| `displayName` | `String` | User&#x27;s display name |
+| `avatarUrl` | `String` | URL to user&#x27;s avatar image |
+| `status` | [`UserStatus`](#user-status) | User&#x27;s account status |
+| `role` | [`UserRole`](#user-role) | User&#x27;s role and permissions |
+| `profile` | [`UserProfile`](#user-profile) | User&#x27;s profile information |
+| `addresses` | [[`Address`](#address)] | User&#x27;s shipping addresses
+@deprecated Use &#x60;addressBook&#x60; instead for better address management |
+| `addressBook` | [`AddressBook`](#address-book) | User&#x27;s address book with labeled addresses |
+| `orders` | [`OrderConnection`](#order-connection) | Orders placed by this user (creates circular reference with Order.customer) |
+| `reviews` | [`ReviewConnection`](#review-connection) | Reviews written by this user (creates circular reference with Review.author) |
+| `wishlist` | [[`Product`](#product)] | Products in user&#x27;s wishlist |
+| `cart` | [`Cart`](#cart) | User&#x27;s shopping cart |
+| `totalSpent` | `Money` | Total amount spent by this user |
+| `orderCount` | `Int` | Number of orders placed |
+| `createdAt` | `DateTime` | When the user was created |
+| `updatedAt` | `DateTime` | When the user was last updated |
+| `deletedAt` | `DateTime` | When the user was deleted (soft delete) |
+| `isDeleted` | `Boolean` | Whether the user account is deleted |
+

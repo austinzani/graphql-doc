@@ -1,0 +1,35 @@
+---
+id: add-address
+title: addAddress
+sidebar_label: addAddress
+tags: ["users", "write", "auth-required"]
+hide_title: true
+---
+
+# addAddress
+
+
+Add an address to the user&#x27;s address book
+
+**Type:** `mutation`
+
+### Arguments
+
+| Name | Type | Description |
+| :--- | :--- | :--- |
+| `input` | [`AddressInput`](#address-input) | Address data |
+
+### Return Type
+
+[`LabeledAddress`](#labeled-address)
+An address with a user-defined label
+
+#### Fields
+
+| Name | Type | Description |
+| :--- | :--- | :--- |
+| `address` | [`Address`](#address) | The address details |
+| `label` | `String` | User-defined label (e.g., &quot;Home&quot;, &quot;Work&quot;) |
+| `isDefaultShipping` | `Boolean` | Whether this is the default shipping address |
+| `isDefaultBilling` | `Boolean` | Whether this is the default billing address |
+

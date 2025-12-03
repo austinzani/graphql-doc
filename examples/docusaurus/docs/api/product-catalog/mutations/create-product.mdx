@@ -1,0 +1,67 @@
+---
+id: create-product
+title: createProduct
+sidebar_label: createProduct
+tags: ["products", "write", "seller-only"]
+hide_title: true
+---
+
+# createProduct
+
+
+Create a new product listing (seller only)
+
+**Type:** `mutation`
+
+### Arguments
+
+| Name | Type | Description |
+| :--- | :--- | :--- |
+| `input` | [`CreateProductInput`](#create-product-input) | Product data |
+
+### Return Type
+
+[`Product`](#product)
+A product available for purchase
+
+Products belong to categories and can have multiple variants (size, color, etc.).
+Each product tracks inventory and pricing information.
+
+**Circular Reference:** Product -&gt; Category -&gt; Product (products)
+**Deep Nesting:** Product -&gt; variants -&gt; inventory -&gt; warehouse -&gt; region
+
+#### Fields
+
+| Name | Type | Description |
+| :--- | :--- | :--- |
+| `id` | `UUID` | Unique identifier |
+| `slug` | `String` | URL-friendly slug |
+| `name` | `String` | Product name |
+| `shortDescription` | `String` | Short description for listings |
+| `description` | `String` | Full product description (supports markdown) |
+| `images` | [[`ProductImage`](#product-image)] | Product images |
+| `primaryImage` | [`ProductImage`](#product-image) | Primary/featured image |
+| `price` | `Money` | Current price |
+| `compareAtPrice` | `Money` | Original price before discount (if on sale) |
+| `isOnSale` | `Boolean` | Whether product is currently on sale |
+| `status` | [`ProductStatus`](#product-status) | Product status |
+| `category` | [`Category`](#category) | Product category (creates circular reference)
+Category contains a list of products, and each product references its category |
+| `additionalCategories` | [[`Category`](#category)] | Additional categories this product belongs to |
+| `tags` | [`String`] | Product tags for filtering |
+| `variants` | [[`ProductVariant`](#product-variant)] | Product variants (size, color combinations) |
+| `totalInventory` | `Int` | Total inventory across all variants |
+| `isInStock` | `Boolean` | Whether any variant is in stock |
+| `seller` | [`User`](#user) | Seller who listed this product |
+| `reviews` | [`ReviewConnection`](#review-connection) | Product reviews (circular: Review references Product) |
+| `averageRating` | `Float` | Average rating (1-5) |
+| `reviewCount` | `Int` | Total number of reviews |
+| `relatedProducts` | [[``](#)] | Related products (for &quot;You might also like&quot;) |
+| `frequentlyBoughtWith` | [[``](#)] | Products frequently bought together |
+| `specifications` | [[`ProductSpecification`](#product-specification)] | Product specifications/attributes |
+| `seo` | [`SEOMetadata`](#seometadata) | SEO metadata |
+| `createdAt` | `DateTime` | When created |
+| `updatedAt` | `DateTime` | When last updated |
+| `deletedAt` | `DateTime` | When deleted (soft delete) |
+| `isDeleted` | `Boolean` | Whether deleted |
+

@@ -1,0 +1,52 @@
+---
+id: create-review
+title: createReview
+sidebar_label: createReview
+tags: ["reviews", "write", "auth-required"]
+hide_title: true
+---
+
+# createReview
+
+
+Create a review for a product
+
+**Type:** `mutation`
+
+### Arguments
+
+| Name | Type | Description |
+| :--- | :--- | :--- |
+| `input` | [`CreateReviewInput`](#create-review-input) | Review data |
+
+### Return Type
+
+[`Review`](#review)
+A product review written by a user
+
+**Circular Reference:** Review -&gt; User -&gt; Reviews
+**Circular Reference:** Review -&gt; Product -&gt; Reviews
+
+#### Fields
+
+| Name | Type | Description |
+| :--- | :--- | :--- |
+| `id` | `UUID` | Unique identifier |
+| `product` | [`Product`](#product) | The product being reviewed |
+| `author` | [`User`](#user) | The user who wrote the review (circular reference) |
+| `rating` | `Int` | Rating from 1 to 5 |
+| `title` | `String` | Review title |
+| `body` | `String` | Review body text |
+| `pros` | [`String`] | Pros mentioned by reviewer |
+| `cons` | [`String`] | Cons mentioned by reviewer |
+| `images` | [[`ReviewImage`](#review-image)] | Attached images |
+| `isVerifiedPurchase` | `Boolean` | Whether reviewer is a verified purchaser |
+| `helpfulCount` | `Int` | Number of users who found this helpful |
+| `unhelpfulCount` | `Int` | Number of users who found this unhelpful |
+| `replies` | [[`ReviewReply`](#review-reply)] | Replies to this review |
+| `isApproved` | `Boolean` | Whether approved by moderators |
+| `moderatedAt` | `DateTime` | When moderated |
+| `moderatedBy` | [`User`](#user) | Who moderated |
+| `createdAt` | `DateTime` | When created |
+| `updatedAt` | `DateTime` | When last updated |
+

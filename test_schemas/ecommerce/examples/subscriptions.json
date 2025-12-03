@@ -1,0 +1,54 @@
+[
+  {
+    "operation": "orderStatusChanged",
+    "operationType": "subscription",
+    "examples": [
+      {
+        "name": "Order Status Update",
+        "description": "Subscribe to updates for a specific order",
+        "query": "subscription OnOrderStatusChanged($orderId: UUID!) {\n  orderStatusChanged(orderId: $orderId) {\n    id\n    status\n    updatedAt\n  }\n}",
+        "variables": {
+          "orderId": "ord_789"
+        },
+        "response": {
+          "type": "success",
+          "httpStatus": 200,
+          "body": {
+            "data": {
+              "orderStatusChanged": {
+                "id": "ord_789",
+                "status": "SHIPPED",
+                "updatedAt": "2024-01-16T14:30:00Z"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "operation": "notificationReceived",
+    "operationType": "subscription",
+    "examples": [
+      {
+        "name": "User Notifications",
+        "description": "Subscribe to real-time user notifications",
+        "query": "subscription OnNotification {\n  notificationReceived {\n    type\n    message\n    read\n  }\n}",
+        "variables": {},
+        "response": {
+          "type": "success",
+          "httpStatus": 200,
+          "body": {
+            "data": {
+              "notificationReceived": {
+                "type": "PRICE_ALERT",
+                "message": "An item in your wishlist is on sale!",
+                "read": false
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+]

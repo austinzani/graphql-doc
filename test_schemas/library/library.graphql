@@ -1,0 +1,164 @@
+"""
+Library Management System GraphQL API
+
+This schema represents a library system for managing books, authors, members, and loans.
+"""
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+# =============================================================================
+# DIRECTIVES
+# =============================================================================
+
+directive @docGroup(
+  name: String!
+  order: Int
+  subsection: String
+) on FIELD_DEFINITION
+
+directive @docPriority(
+  level: Int!
+) on FIELD_DEFINITION
+
+directive @docTags(
+  tags: [String!]!
+) on FIELD_DEFINITION
+
+# =============================================================================
+# SCALARS
+# =============================================================================
+
+scalar Date
+scalar ISBN
+
+# =============================================================================
+# ENUMS
+# =============================================================================
+
+enum BookStatus {
+  AVAILABLE
+  BORROWED
+  LOST
+  RESERVED
+}
+
+enum MemberStatus {
+  ACTIVE
+  EXPIRED
+  SUSPENDED
+}
+
+# =============================================================================
+# TYPES
+# =============================================================================
+
+type Author {
+  id: ID!
+  name: String!
+  biography: String
+  books: [Book!]!
+}
+
+type Book {
+  id: ID!
+  title: String!
+  isbn: ISBN!
+  author: Author!
+  publishedDate: Date!
+  status: BookStatus!
+  summary: String
+}
+
+type Member {
+  id: ID!
+  name: String!
+  email: String!
+  status: MemberStatus!
+  currentLoans: [Loan!]!
+  loanHistory: [Loan!]!
+}
+
+type Loan {
+  id: ID!
+  book: Book!
+  member: Member!
+  borrowedDate: Date!
+  dueDate: Date!
+  returnedDate: Date
+  isOverdue: Boolean!
+}
+
+# =============================================================================
+# QUERY TYPE
+# =============================================================================
+
+type Query {
+  """
+  Get a book by ISBN
+  """
+  bookByISBN(isbn: ISBN!): Book
+    @docGroup(name: "Catalog", order: 1)
+    @docPriority(level: 1)
+    @docTags(tags: ["books", "public"])
+
+  """
+  Search for books by title or author
+  """
+  searchBooks(query: String!): [Book!]!
+    @docGroup(name: "Catalog", order: 1)
+    @docPriority(level: 2)
+    @docTags(tags: ["books", "public"])
+
+  """
+  Get author details
+  """
+  author(id: ID!): Author
+    @docGroup(name: "Catalog", order: 1)
+    @docPriority(level: 3)
+    @docTags(tags: ["authors", "public"])
+
+  """
+  Get member details
+  """
+  member(id: ID!): Member
+    @docGroup(name: "Membership", order: 2)
+    @docPriority(level: 1)
+    @docTags(tags: ["members", "admin"])
+}
+
+# =============================================================================
+# MUTATION TYPE
+# =============================================================================
+
+type Mutation {
+  """
+  Register a new member
+  """
+  registerMember(input: RegisterMemberInput!): Member!
+    @docGroup(name: "Membership", order: 2)
+    @docPriority(level: 1)
+    @docTags(tags: ["members", "admin"])
+
+  """
+  Borrow a book
+  """
+  borrowBook(bookId: ID!, memberId: ID!): Loan!
+    @docGroup(name: "Circulation", order: 3)
+    @docPriority(level: 1)
+    @docTags(tags: ["loans", "admin"])
+
+  """
+  Return a book
+  """
+  returnBook(loanId: ID!): Loan!
+    @docGroup(name: "Circulation", order: 3)
+    @docPriority(level: 2)
+    @docTags(tags: ["loans", "admin"])
+}
+
+input RegisterMemberInput {
+  name: String!
+  email: String!
+}

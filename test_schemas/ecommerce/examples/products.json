@@ -1,0 +1,131 @@
+[
+  {
+    "operation": "searchProducts",
+    "operationType": "query",
+    "examples": [
+      {
+        "name": "Search Smartphones",
+        "description": "Search for smartphones with price range filter",
+        "query": "query SearchSmartphones($query: String!, $filter: ProductFilterInput) {\n  searchProducts(query: $query, filter: $filter) {\n    items {\n      name\n      price\n      averageRating\n    }\n    totalCount\n  }\n}",
+        "variables": {
+          "query": "smartphone",
+          "filter": {
+            "priceMin": 500,
+            "priceMax": 1000,
+            "inStock": true
+          }
+        },
+        "response": {
+          "type": "success",
+          "httpStatus": 200,
+          "body": {
+            "data": {
+              "searchProducts": {
+                "items": [
+                  {
+                    "name": "Phone X Pro",
+                    "price": "999.00",
+                    "averageRating": 4.8
+                  },
+                  {
+                    "name": "Phone Y Mini",
+                    "price": "699.00",
+                    "averageRating": 4.5
+                  }
+                ],
+                "totalCount": 15
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "operation": "createProduct",
+    "operationType": "mutation",
+    "examples": [
+      {
+        "name": "Create New Product",
+        "description": "List a new product for sale",
+        "query": "mutation CreateProduct($input: CreateProductInput!) {\n  createProduct(input: $input) {\n    id\n    name\n    slug\n    price\n  }\n}",
+        "variables": {
+          "input": {
+            "name": "Wireless Headphones",
+            "description": "High quality noise cancelling headphones",
+            "price": "199.99",
+            "categoryId": "cat_123"
+          }
+        },
+        "response": {
+          "type": "success",
+          "httpStatus": 200,
+          "body": {
+            "data": {
+              "createProduct": {
+                "id": "prod_new_123",
+                "name": "Wireless Headphones",
+                "slug": "wireless-headphones",
+                "price": "199.99"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "operation": "updateProduct",
+    "operationType": "mutation",
+    "examples": [
+      {
+        "name": "Update Price",
+        "description": "Update product price and status",
+        "query": "mutation UpdateProduct($id: UUID!, $input: UpdateProductInput!) {\n  updateProduct(id: $id, input: $input) {\n    id\n    price\n    status\n  }\n}",
+        "variables": {
+          "id": "prod_123",
+          "input": {
+            "price": "149.99",
+            "status": "ON_SALE"
+          }
+        },
+        "response": {
+          "type": "success",
+          "httpStatus": 200,
+          "body": {
+            "data": {
+              "updateProduct": {
+                "id": "prod_123",
+                "price": "149.99",
+                "status": "ON_SALE"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "operation": "deleteProduct",
+    "operationType": "mutation",
+    "examples": [
+      {
+        "name": "Delete Product",
+        "description": "Soft delete a product",
+        "query": "mutation DeleteProduct($id: UUID!) {\n  deleteProduct(id: $id)\n}",
+        "variables": {
+          "id": "prod_123"
+        },
+        "response": {
+          "type": "success",
+          "httpStatus": 200,
+          "body": {
+            "data": {
+              "deleteProduct": true
+            }
+          }
+        }
+      }
+    ]
+  }
+]

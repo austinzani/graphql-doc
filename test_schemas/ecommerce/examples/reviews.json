@@ -1,0 +1,89 @@
+[
+  {
+    "operation": "review",
+    "operationType": "query",
+    "examples": [
+      {
+        "name": "Get Review",
+        "description": "Get details of a specific review",
+        "query": "query GetReview($id: UUID!) {\n  review(id: $id) {\n    rating\n    comment\n    author {\n      displayName\n    }\n  }\n}",
+        "variables": {
+          "id": "rev_123"
+        },
+        "response": {
+          "type": "success",
+          "httpStatus": 200,
+          "body": {
+            "data": {
+              "review": {
+                "rating": 5,
+                "comment": "Great product!",
+                "author": {
+                  "displayName": "John Doe"
+                }
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "operation": "createReview",
+    "operationType": "mutation",
+    "examples": [
+      {
+        "name": "Write Review",
+        "description": "Submit a new product review",
+        "query": "mutation CreateReview($input: CreateReviewInput!) {\n  createReview(input: $input) {\n    id\n    rating\n    isApproved\n  }\n}",
+        "variables": {
+          "input": {
+            "productId": "prod_123",
+            "rating": 5,
+            "title": "Amazing!",
+            "comment": "Best purchase ever."
+          }
+        },
+        "response": {
+          "type": "success",
+          "httpStatus": 200,
+          "body": {
+            "data": {
+              "createReview": {
+                "id": "rev_new_123",
+                "rating": 5,
+                "isApproved": false
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "operation": "markReviewHelpful",
+    "operationType": "mutation",
+    "examples": [
+      {
+        "name": "Mark Helpful",
+        "description": "Mark a review as helpful",
+        "query": "mutation MarkHelpful($id: UUID!, $helpful: Boolean!) {\n  markReviewHelpful(reviewId: $id, helpful: $helpful) {\n    helpfulCount\n  }\n}",
+        "variables": {
+          "id": "rev_123",
+          "helpful": true
+        },
+        "response": {
+          "type": "success",
+          "httpStatus": 200,
+          "body": {
+            "data": {
+              "markReviewHelpful": {
+                "helpfulCount": 15
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+]

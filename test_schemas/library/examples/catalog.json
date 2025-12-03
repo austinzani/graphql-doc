@@ -1,0 +1,101 @@
+[
+  {
+    "operation": "bookByISBN",
+    "operationType": "query",
+    "examples": [
+      {
+        "name": "Find The Great Gatsby",
+        "description": "Look up a classic novel by its ISBN",
+        "query": "query FindBook($isbn: ISBN!) {\n  bookByISBN(isbn: $isbn) {\n    title\n    author {\n      name\n    }\n    status\n  }\n}",
+        "variables": {
+          "isbn": "978-0743273565"
+        },
+        "response": {
+          "type": "success",
+          "httpStatus": 200,
+          "body": {
+            "data": {
+              "bookByISBN": {
+                "title": "The Great Gatsby",
+                "author": {
+                  "name": "F. Scott Fitzgerald"
+                },
+                "status": "AVAILABLE"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "operation": "searchBooks",
+    "operationType": "query",
+    "examples": [
+      {
+        "name": "Search Sci-Fi",
+        "description": "Search for science fiction books",
+        "query": "query SearchBooks($query: String!) {\n  searchBooks(query: $query) {\n    title\n    author {\n      name\n    }\n  }\n}",
+        "variables": {
+          "query": "science fiction"
+        },
+        "response": {
+          "type": "success",
+          "httpStatus": 200,
+          "body": {
+            "data": {
+              "searchBooks": [
+                {
+                  "title": "Dune",
+                  "author": {
+                    "name": "Frank Herbert"
+                  }
+                },
+                {
+                  "title": "Foundation",
+                  "author": {
+                    "name": "Isaac Asimov"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "operation": "author",
+    "operationType": "query",
+    "examples": [
+      {
+        "name": "Get Author",
+        "description": "Retrieve author details and books",
+        "query": "query GetAuthor($id: ID!) {\n  author(id: $id) {\n    name\n    biography\n    books {\n      title\n    }\n  }\n}",
+        "variables": {
+          "id": "auth_123"
+        },
+        "response": {
+          "type": "success",
+          "httpStatus": 200,
+          "body": {
+            "data": {
+              "author": {
+                "name": "J.R.R. Tolkien",
+                "biography": "English writer, poet, philologist, and academic.",
+                "books": [
+                  {
+                    "title": "The Hobbit"
+                  },
+                  {
+                    "title": "The Lord of the Rings"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+]
