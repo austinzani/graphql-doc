@@ -119,8 +119,25 @@ describe('TypeViewer', () => {
       </TestWrapper>
     );
 
-    expect(screen.getByText('[')).toBeDefined();
-    expect(screen.getByText('String')).toBeDefined();
-    expect(screen.getByText(']')).toBeDefined();
+    // Verify brackets are rendered with the type name
+    // Since they are now part of the text content tree of the specific component
+    // we just check if it finds the combined text text nodes possibly split?
+    // Or just look for the text content.
+    expect(screen.getByText('[String]')).toBeDefined();
+  });
+
+  it('renders LIST of OBJECTS correctly', () => {
+    const listType: ExpandedType = {
+      kind: 'LIST',
+      ofType: mockObject,
+    };
+
+    render(
+      <TestWrapper>
+        <TypeViewer type={listType} />
+      </TestWrapper>
+    );
+
+    expect(screen.getByText('[User]')).toBeDefined();
   });
 });

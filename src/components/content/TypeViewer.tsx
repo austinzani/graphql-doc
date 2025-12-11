@@ -8,6 +8,8 @@ interface TypeViewerProps {
   defaultExpandedLevels?: number;
   maxDepth?: number;
   path?: string; // Unique path for expansion tracking
+  labelPrefix?: string;
+  labelSuffix?: string;
 }
 
 export const TypeViewer = React.memo(function TypeViewer({
@@ -16,6 +18,8 @@ export const TypeViewer = React.memo(function TypeViewer({
   defaultExpandedLevels = 2,
   maxDepth = 10,
   path = 'root',
+  labelPrefix = '',
+  labelSuffix = '',
 }: TypeViewerProps) {
   const { isExpanded, toggleExpand } = useExpansion();
 
@@ -30,45 +34,56 @@ export const TypeViewer = React.memo(function TypeViewer({
 
   // 1. SCALAR
   if (type.kind === 'SCALAR') {
-    return <span className="gql-type font-mono">{type.name}</span>;
+    return (
+      <span className="gql-type font-mono">
+        {labelPrefix}
+        {type.name}
+        {labelSuffix}
+      </span>
+    );
   }
 
   // 2. LIST
   if (type.kind === 'LIST') {
+    // Instead of wrapping in a span with brackets that enclose the whole block,
+    // we pass the brackets down to the inner type so they appear as part of the label.
+    // This allows the inner type (e.g. Object) to handle expansion without the brackets moving weirdly around the content block.
     return (
-      <span className="gql-list-wrapper">
-        <span className="gql-bracket">[</span>
-        <TypeViewer
-          type={type.ofType}
-          depth={depth}
-          defaultExpandedLevels={defaultExpandedLevels}
-          maxDepth={maxDepth}
-          // List doesn't necessarily deepen the *graph* depth for expansion logic usually,
-          // OR it does? Let's say it does not increment depth for expansion control purposes
-          // to avoid collapsing immediate list items aggressively,
-          // BUT it needs a unique path.
-          path={`${path}.list`}
-        />
-        <span className="gql-bracket">]</span>
-      </span>
+      <TypeViewer
+        type={type.ofType}
+        depth={depth}
+        defaultExpandedLevels={defaultExpandedLevels}
+        maxDepth={maxDepth}
+        path={`${path}.list`}
+        labelPrefix={`[${labelPrefix}`}
+        labelSuffix={`${labelSuffix}]`}
+      />
     );
   }
 
   // 3. CIRCULAR_REF
   if (type.kind === 'CIRCULAR_REF') {
     return (
-      <a href={`#${type.link}`} className="gql-type" title={`Go to ${type.ref}`}>
-        ↻ {type.ref}
-      </a>
+      <span className="gql-type">
+        {labelPrefix}
+        <a href={`#${type.link}`} className="gql-type" title={`Go to ${type.ref}`}>
+          ↻ {type.ref}
+        </a>
+        {labelSuffix}
+      </span>
     );
   }
 
   // 4. TYPE_REF
   if (type.kind === 'TYPE_REF') {
     return (
-      <a href={`#${type.link}`} className="gql-type">
-        {type.name}
-      </a>
+      <span className="gql-type">
+        {labelPrefix}
+        <a href={`#${type.link}`} className="gql-type">
+          {type.name}
+        </a>
+        {labelSuffix}
+      </span>
     );
   }
 
@@ -84,7 +99,11 @@ export const TypeViewer = React.memo(function TypeViewer({
           className={`gql-expand-toggle ${hasValues ? '' : 'cursor-default'}`}
           onClick={hasValues ? handleToggle : undefined}
         >
-          <span className="gql-type">{type.name}</span>
+          <span className="gql-type">
+            {labelPrefix}
+            {type.name}
+            {labelSuffix}
+          </span>
           {hasValues && (
             <span className={`gql-toggle-icon ${expanded ? 'is-expanded' : ''}`}>▶</span>
           )}
@@ -113,7 +132,9 @@ export const TypeViewer = React.memo(function TypeViewer({
     if (depth >= maxDepth) {
       return (
         <span className="gql-type opacity-50" title="Max depth reached">
-          {type.name}...
+          {labelPrefix}
+          {type.name}
+          {labelSuffix}...
         </span>
       );
     }
@@ -126,7 +147,11 @@ export const TypeViewer = React.memo(function TypeViewer({
           className={`gql-expand-toggle ${hasFields ? '' : 'cursor-default'}`}
           onClick={hasFields ? handleToggle : undefined}
         >
-          <span className="gql-type">{type.name}</span>
+          <span className="gql-type">
+            {labelPrefix}
+            {type.name}
+            {labelSuffix}
+          </span>
           {hasFields && (
             <span className={`gql-toggle-icon ${expanded ? 'is-expanded' : ''}`}>▶</span>
           )}
@@ -171,7 +196,11 @@ export const TypeViewer = React.memo(function TypeViewer({
           className={`gql-expand-toggle ${hasTypes ? '' : 'cursor-default'}`}
           onClick={hasTypes ? handleToggle : undefined}
         >
-          <span className="gql-type">{type.name}</span>
+          <span className="gql-type">
+            {labelPrefix}
+            {type.name}
+            {labelSuffix}
+          </span>
           {hasTypes && (
             <span className={`gql-toggle-icon ${expanded ? 'is-expanded' : ''}`}>▶</span>
           )}
