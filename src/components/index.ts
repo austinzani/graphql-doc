@@ -4,3 +4,6 @@ import './styles/graphql-docs.css';
 
 // Context
 export * from './context/ExpansionProvider';
+
+// Content
+export * from './content/TypeViewer';
