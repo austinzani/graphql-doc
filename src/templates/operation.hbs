@@ -1,4 +1,4 @@
-# {{name}}
+# {{name}} {{#if isDeprecated}}<span class="gql-badge gql-badge-warning">Deprecated</span>{{/if}}
 
 {{#if isDeprecated}}
 > [!WARNING]
@@ -7,7 +7,7 @@
 
 {{description}}
 
-**Type:** `{{operationType}}`
+**Type:** <span class="gql-type">{{operationType}}</span>
 
 {{> arguments}}
 
@@ -24,7 +24,8 @@
 | Name | Type | Description |
 | :--- | :--- | :--- |
 {{#each fields}}
-| `{{name}}` | {{> type type}} | {{description}} |
+| <span class="gql-field">{{name}}</span> | {{> type type}} | {{#if description}}<span
+    class="gql-description">{{description}}</span>{{else}}-{{/if}} |
 {{/each}}
 {{/if}}
 {{/with}}

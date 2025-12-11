@@ -17,6 +17,7 @@ A documentation generator for GraphQL APIs that organizes content by **operation
 - 🔍 **Custom Directives**: Use `@docGroup`, `@docPriority`, and `@docTags` to organize your schema.
 - 📄 **External Metadata**: Keep your schema clean by loading examples and error definitions from external JSON files.
 - 🛠️ **Configurable**: Supports `.graphqlrc`, `graphql-docs.config.js`, and more.
+- 🎨 **Themable**: Full CSS variables support for easy customization and dark mode integration.
 
 ## Installation
 

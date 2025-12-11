@@ -4,6 +4,7 @@
 | Name | Type | Description |
 | :--- | :--- | :--- |
 {{#each arguments}}
-| `{{name}}` | {{> type type}} | {{#if description}}{{description}}{{else}}-{{/if}} |
+| <span class="gql-field">{{name}}</span> | {{> type type}} | {{#if description}}<span
+    class="gql-description">{{description}}</span>{{else}}-{{/if}} |
 {{/each}}
 {{/if}}

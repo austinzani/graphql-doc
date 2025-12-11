@@ -1,13 +1,13 @@
 {{~#if (eq kind "SCALAR")~}}
-  `{{name}}`
+<span class="gql-type">{{name}}</span>
 {{~else if (eq kind "NON_NULL")~}}
-  {{> type ofType}}!
+{{> type ofType}}<span class="gql-required">!</span>
 {{~else if (eq kind "LIST")~}}
-  [{{> type ofType}}]
+[<span class="gql-type">{{> type ofType}}</span>]
 {{~else if (eq kind "CIRCULAR_REF")~}}
-  [`{{ref}}`]({{link}}) *(circular)*
+[<span class="gql-type">{{ref}}</span>]({{link}}) <span class="gql-badge gql-badge-warning">circular</span>
 {{~else if (eq kind "TYPE_REF")~}}
-  [`{{name}}`]({{link}})
+[<span class="gql-type">{{name}}</span>]({{link}})
 {{~else~}}
-  [`{{name}}`](#{{slugify name}})
+[<span class="gql-type">{{name}}</span>](#{{slugify name}})
 {{~/if~}}

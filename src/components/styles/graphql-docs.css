@@ -1,0 +1,152 @@
+/**
+ * GraphQL Docs Generator Theme System
+ * 
+ * This file defines the CSS custom properties (variables) used throughout the
+ * generated documentation components. It supports light (default) and dark modes.
+ * 
+ * Users can override these variables in their own CSS to customize the appearance.
+ */
+
+:root {
+    /* ==========================================================================
+     Layout Tokens
+     ========================================================================== */
+    --gql-content-max-width: 1400px;
+    --gql-spacing-base: 1rem;
+    --gql-border-radius: 6px;
+
+    /* ==========================================================================
+     Color Tokens - Light Theme (Default)
+     ========================================================================== */
+
+    /* Panels & Backgrounds */
+    --gql-code-panel-bg: #1e1e1e;
+    /* VS Code dark like for code blocks even in light mode usually, can vary */
+    /* Actually, ticket says #1e1e1e for light mode root? Let's follow ticket strictly first but that seems dark for light mode? */
+    /* Re-reading ticket: 
+     :root { 
+       --gql-code-panel-bg: #1e1e1e; 
+       --gql-code-panel-fg: #d4d4d4; 
+     }
+     This suggests code blocks are dark by default even in light theme, which is common.
+  */
+    --gql-code-panel-bg: #1e1e1e;
+    --gql-code-panel-fg: #d4d4d4;
+    --gql-border-color: #e5e7eb;
+
+    /* Typography Colors */
+    --gql-type-color: #0969da;
+    /* Links, Types */
+    --gql-field-color: #1f2328;
+    /* Field names */
+    --gql-description-color: #656d76;
+    --gql-required-color: #cf222e;
+    --gql-deprecated-color: #9a6700;
+
+    /* Status Token System */
+    /* Success */
+    --gql-success-bg: #dcfce7;
+    --gql-success-text: #166534;
+    /* Warning */
+    --gql-warning-bg: #fef3c7;
+    --gql-warning-text: #92400e;
+    /* Error */
+    --gql-error-bg: #fee2e2;
+    --gql-error-text: #991b1b;
+
+    /* Interactive Elements */
+    --gql-hover-bg: #f6f8fa;
+    --gql-focus-ring: 0 0 0 2px rgba(9, 105, 218, 0.3);
+}
+
+/* ==========================================================================
+   Dark Theme
+   Docusaurus uses [data-theme='dark'] on the html element
+   ========================================================================== */
+[data-theme='dark'] {
+    /* Panels & Backgrounds */
+    --gql-code-panel-bg: #0d1117;
+    --gql-code-panel-fg: #e6edf3;
+    --gql-border-color: #30363d;
+
+    /* Typography Colors */
+    --gql-type-color: #79c0ff;
+    --gql-field-color: #e6edf3;
+    --gql-description-color: #8b949e;
+    --gql-required-color: #ff7b72;
+    --gql-deprecated-color: #d29922;
+
+    /* Status Colors */
+    --gql-success-bg: #238636;
+    --gql-success-text: #ffffff;
+    --gql-warning-bg: #9e6a03;
+    --gql-warning-text: #ffffff;
+    --gql-error-bg: #da3633;
+    --gql-error-text: #ffffff;
+
+    /* Interactive */
+    --gql-hover-bg: #161b22;
+}
+
+/* ==========================================================================
+   Utility Classes
+   ========================================================================== */
+
+/* Typography */
+.gql-type {
+    color: var(--gql-type-color);
+    font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+}
+
+.gql-field {
+    color: var(--gql-field-color);
+    font-weight: 600;
+}
+
+.gql-description {
+    color: var(--gql-description-color);
+}
+
+.gql-required {
+    color: var(--gql-required-color);
+}
+
+.gql-deprecated {
+    color: var(--gql-deprecated-color);
+}
+
+/* Layout */
+.gql-panel {
+    background-color: var(--gql-code-panel-bg);
+    color: var(--gql-code-panel-fg);
+    border: 1px solid var(--gql-border-color);
+    border-radius: var(--gql-border-radius);
+}
+
+/* Status Badges */
+.gql-badge {
+    display: inline-block;
+    padding: 0.25em 0.5em;
+    font-size: 0.85em;
+    font-weight: 500;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: var(--gql-border-radius);
+}
+
+.gql-badge-success {
+    background-color: var(--gql-success-bg);
+    color: var(--gql-success-text);
+}
+
+.gql-badge-warning {
+    background-color: var(--gql-warning-bg);
+    color: var(--gql-warning-text);
+}
+
+.gql-badge-error {
+    background-color: var(--gql-error-bg);
+    color: var(--gql-error-text);
+}
