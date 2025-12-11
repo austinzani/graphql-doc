@@ -34,4 +34,15 @@ We provide utility classes to apply these standard styles to generated content:
 - `.gql-badge`: Base class for status badges.
   - `.gql-badge-success`
   - `.gql-badge-warning`
+  - `.gql-badge-success`
+  - `.gql-badge-warning`
   - `.gql-badge-error`
+
+### Component Specific Classes
+
+For `TypeViewer` and tree structures:
+
+- `.gql-tree-node`: Container for a node in the type tree.
+- `.gql-expand-toggle`: Clickable header for expandable elements.
+- `.gql-nested-content`: Container for children/fields with indentation and border.
+- `.gql-toggle-icon`: The expansion arrow indicator.
